@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Google.Apis.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using MySqlConnector;
 using SysPuntoVenta.Backend.Data;
 using SysPuntoVenta.Backend.Services;
@@ -17,12 +20,14 @@ namespace SysPuntoVenta.Backend.Controllers
         private readonly Database _database;
         private readonly TokenService _tokenService;
         private readonly IEmailService _emailService;
+        private readonly IConfiguration _configuration;
 
-        public AuthController(Database database, TokenService tokenService, IEmailService emailService)
+        public AuthController(Database database, TokenService tokenService, IEmailService emailService, IConfiguration configuration)
         {
             _database = database;
             _tokenService = tokenService;
             _emailService = emailService;
+            _configuration = configuration;
         }
 
         /// <summary>
@@ -205,8 +210,217 @@ namespace SysPuntoVenta.Backend.Controllers
         }
 
         /// <summary>
-        /// Registra un nuevo operador en el sistema con contraseña cifrada mediante BCrypt.
+        /// Inicia sesión o auto-registra un usuario mediante credenciales de Google OAuth 2.0 / OpenID Connect.
+        /// Admite modo de simulación para desarrollo local controlado mediante 'GoogleAuth:SimularEnDesarrollo'.
+        /// Los nuevos usuarios reciben por defecto el rol de 'Operador' del sistema.
         /// </summary>
+        /// <param name="request">Datos del token ID de Google o perfil simulado de prueba.</param>
+        /// <returns>Respuesta de inicio de sesión con JWT Bearer y datos del usuario.</returns>
+        [HttpPost("google-login")]
+        public async Task<ActionResult<LoginResponse>> GoogleLogin([FromBody] GoogleLoginRequest request)
+        {
+            try
+            {
+                bool simular = _configuration.GetValue<bool>("GoogleAuth:SimularEnDesarrollo") ||
+                               string.IsNullOrWhiteSpace(request.IdToken) ||
+                               request.IdToken.StartsWith("SIMULAD", StringComparison.OrdinalIgnoreCase);
+
+                string googleId;
+                string email;
+                string nombre;
+                string apellido;
+                string avatar;
+
+                if (simular)
+                {
+                    googleId = "simulated_google_sub_100200300";
+                    email = !string.IsNullOrWhiteSpace(request.EmailSimulado) ? request.EmailSimulado.Trim() : "operador.google@sistema.com";
+                    nombre = !string.IsNullOrWhiteSpace(request.NombreSimulado) ? request.NombreSimulado.Trim() : "Operador";
+                    apellido = !string.IsNullOrWhiteSpace(request.ApellidoSimulado) ? request.ApellidoSimulado.Trim() : "Google";
+                    avatar = request.AvatarSimulado ?? "";
+                }
+                else
+                {
+                    try
+                    {
+                        var clientId = _configuration["GoogleAuth:ClientId"];
+                        var settings = new GoogleJsonWebSignature.ValidationSettings
+                        {
+                            Audience = new[] { clientId }
+                        };
+                        var payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken, settings);
+                        googleId = payload.Subject;
+                        email = payload.Email;
+                        nombre = !string.IsNullOrWhiteSpace(payload.GivenName) ? payload.GivenName : "Usuario";
+                        apellido = !string.IsNullOrWhiteSpace(payload.FamilyName) ? payload.FamilyName : "Google";
+                        avatar = payload.Picture ?? "";
+                    }
+                    catch (Exception ex)
+                    {
+                        return Unauthorized(new LoginResponse
+                        {
+                            Autenticado = false,
+                            Mensaje = $"Token de Google inválido o expirado: {ex.Message}"
+                        });
+                    }
+                }
+
+                await using var conn = _database.CreateConnection();
+                await conn.OpenAsync();
+
+                // 1. Buscar si el usuario ya existe por google_id o por email
+                const string sqlBuscar = @"
+                    SELECT 
+                        u.id AS idUsuario,
+                        COALESCE(u.nombre, '') AS nombre,
+                        COALESCE(u.apellido, '') AS apellido,
+                        COALESCE(u.userName, '') AS user,
+                        COALESCE(u.email, '') AS email,
+                        COALESCE(c.descripcion, '') AS ciudad,
+                        COALESCE(p.descripcion, '') AS pais,
+                        COALESCE(g.nombre, 'Operadores') AS rol,
+                        u.create_at,
+                        COALESCE(u.server, '') AS ip
+                    FROM seg_usuarios u
+                    LEFT JOIN seg_grupo_usuario gu ON u.id = gu.id_usuario
+                    LEFT JOIN seg_grupos g ON gu.id_grupo = g.id
+                    LEFT JOIN ciudades c ON u.idCiudad = c.id
+                    LEFT JOIN paises p ON u.idPais = p.id
+                    WHERE (u.google_id IS NOT NULL AND u.google_id = @googleId) OR (u.email IS NOT NULL AND u.email = @email)
+                    LIMIT 1;";
+
+                UsuarioDto? usuario = null;
+                await using (var cmdBuscar = new MySqlCommand(sqlBuscar, conn))
+                {
+                    cmdBuscar.Parameters.AddWithValue("@googleId", googleId);
+                    cmdBuscar.Parameters.AddWithValue("@email", email);
+
+                    await using var r = await cmdBuscar.ExecuteReaderAsync();
+                    if (await r.ReadAsync())
+                    {
+                        usuario = new UsuarioDto
+                        {
+                            Id = r.SafeGetInt32("idUsuario"),
+                            Nombre = r.SafeGetString("nombre"),
+                            Apellido = r.SafeGetString("apellido"),
+                            UserName = r.SafeGetString("user"),
+                            Email = r.SafeGetString("email"),
+                            Ciudad = r.SafeGetString("ciudad"),
+                            Pais = r.SafeGetString("pais"),
+                            Rol = r.SafeGetString("rol", "Operadores"),
+                            CreateAt = r.SafeGetDateTime("create_at"),
+                            Ip = r.SafeGetString("ip")
+                        };
+                    }
+                }
+
+                if (usuario != null)
+                {
+                    // Actualizar vinculación con Google si no estaba vinculado
+                    const string sqlUpdateVinculo = @"
+                        UPDATE seg_usuarios 
+                        SET google_id = @googleId, proveedor_auth = 'GOOGLE', avatar_url = COALESCE(avatar_url, @avatar) 
+                        WHERE id = @id;";
+                    await using var cmdUpdate = new MySqlCommand(sqlUpdateVinculo, conn);
+                    cmdUpdate.Parameters.AddWithValue("@googleId", googleId);
+                    cmdUpdate.Parameters.AddWithValue("@avatar", avatar);
+                    cmdUpdate.Parameters.AddWithValue("@id", usuario.Id);
+                    await cmdUpdate.ExecuteNonQueryAsync();
+                }
+                else
+                {
+                    // Auto-aprovisionar nuevo usuario con rol por defecto: Operador
+                    var baseUser = email.Split('@')[0].Replace(".", "").ToLowerInvariant();
+                    string userNameFinal = baseUser;
+
+                    // Verificar unicidad de userName
+                    const string sqlCheckUser = "SELECT COUNT(*) FROM seg_usuarios WHERE userName = @userName;";
+                    await using (var cmdCheckUser = new MySqlCommand(sqlCheckUser, conn))
+                    {
+                        cmdCheckUser.Parameters.AddWithValue("@userName", userNameFinal);
+                        var count = Convert.ToInt32(await cmdCheckUser.ExecuteScalarAsync());
+                        if (count > 0)
+                        {
+                            userNameFinal = $"{baseUser}_{Random.Shared.Next(100, 999)}";
+                        }
+                    }
+
+                    string randomPasswordHash = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString("N"));
+
+                    const string sqlInsertUser = @"
+                        INSERT INTO seg_usuarios (nombre, apellido, userName, userPassword, email, google_id, proveedor_auth, avatar_url, idPais, create_at, server)
+                        VALUES (@nombre, @apellido, @userName, @password, @email, @googleId, 'GOOGLE', @avatar, 1, NOW(), '127.0.0.1');
+                        SELECT LAST_INSERT_ID();";
+
+                    int newUserId;
+                    await using (var cmdInsert = new MySqlCommand(sqlInsertUser, conn))
+                    {
+                        cmdInsert.Parameters.AddWithValue("@nombre", nombre);
+                        cmdInsert.Parameters.AddWithValue("@apellido", apellido);
+                        cmdInsert.Parameters.AddWithValue("@userName", userNameFinal);
+                        cmdInsert.Parameters.AddWithValue("@password", randomPasswordHash);
+                        cmdInsert.Parameters.AddWithValue("@email", email);
+                        cmdInsert.Parameters.AddWithValue("@googleId", googleId);
+                        cmdInsert.Parameters.AddWithValue("@avatar", avatar);
+                        newUserId = Convert.ToInt32(await cmdInsert.ExecuteScalarAsync());
+                    }
+
+                    // Asignar rol por defecto: Grupo 3 (Operadores)
+                    try
+                    {
+                        const string sqlRol = "INSERT INTO seg_grupo_usuario (id_usuario, id_grupo) VALUES (@idUsuario, 3);";
+                        await using var cmdRol = new MySqlCommand(sqlRol, conn);
+                        cmdRol.Parameters.AddWithValue("@idUsuario", newUserId);
+                        await cmdRol.ExecuteNonQueryAsync();
+                    }
+                    catch { }
+
+                    usuario = new UsuarioDto
+                    {
+                        Id = newUserId,
+                        Nombre = nombre,
+                        Apellido = apellido,
+                        UserName = userNameFinal,
+                        Email = email,
+                        Rol = "Operadores",
+                        Pais = "Paraguay",
+                        CreateAt = DateTime.Now,
+                        Ip = "127.0.0.1"
+                    };
+                }
+
+                // Generar tokens JWT
+                var accessToken = _tokenService.GenerateAccessToken(usuario, out var exp);
+                var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
+                var (refreshToken, _) = await _tokenService.GenerateRefreshTokenAsync(usuario.Id, clientIp);
+
+                return Ok(new LoginResponse
+                {
+                    Autenticado = true,
+                    Mensaje = simular ? "Inicio de sesión simulado con Google exitoso" : "Autenticación con Google exitosa",
+                    AccessToken = accessToken,
+                    RefreshToken = refreshToken,
+                    ExpiraEl = exp,
+                    Usuario = usuario
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new LoginResponse
+                {
+                    Autenticado = false,
+                    Mensaje = $"Error al procesar autenticación con Google: {ex.Message}"
+                });
+            }
+        }
+
+        /// <summary>
+        /// Registra un nuevo usuario en el sistema con contraseña cifrada mediante BCrypt.
+        /// El rol por defecto asignado es 'Operador'.
+        /// La asignación del rol 'Administrador' solo está permitida si la solicitud proviene de un Administrador autenticado.
+        /// </summary>
+        /// <param name="request">Datos del nuevo usuario a registrar.</param>
+        /// <returns>Resultado de la operación con el ID generado.</returns>
         [HttpPost("register")]
         public async Task<ActionResult<RespuestaOperacion>> Register([FromBody] RegistroUsuarioRequest request)
         {
@@ -223,6 +437,35 @@ namespace SysPuntoVenta.Backend.Controllers
                     {
                         return BadRequest(new RespuestaOperacion { Exito = false, Mensaje = "El nombre de usuario ya está registrado." });
                     }
+                }
+
+                // Determinar el grupo/rol destino:
+                // Solo administradores autenticados pueden registrar un nuevo Administrador.
+                int idGrupoDestino = 3; // Por defecto: Operadores (Grupo 3)
+                string rolSolicitado = (request.Rol ?? "").Trim();
+
+                if (rolSolicitado.Equals("Administrador", StringComparison.OrdinalIgnoreCase) || 
+                    rolSolicitado.Equals("Administradores", StringComparison.OrdinalIgnoreCase))
+                {
+                    bool esAdminAutenticado = User?.IsInRole("Administrador") == true || User?.IsInRole("Administradores") == true;
+                    if (!esAdminAutenticado)
+                    {
+                        return StatusCode(403, new RespuestaOperacion
+                        {
+                            Exito = false,
+                            Mensaje = "Acceso denegado: Solo un usuario Administrador puede registrar o asignar cuentas con rol Administrador."
+                        });
+                    }
+                    idGrupoDestino = 1; // Grupo 1: Administradores
+                }
+                else if (rolSolicitado.Equals("Vendedor", StringComparison.OrdinalIgnoreCase) || 
+                         rolSolicitado.Equals("Vendedores", StringComparison.OrdinalIgnoreCase))
+                {
+                    idGrupoDestino = 2; // Grupo 2: Vendedores
+                }
+                else
+                {
+                    idGrupoDestino = 3; // Grupo 3: Operadores por defecto
                 }
 
                 // Hasheo seguro de contraseña con BCrypt
@@ -246,9 +489,10 @@ namespace SysPuntoVenta.Backend.Controllers
 
                 try
                 {
-                    const string rolSql = "INSERT INTO seg_grupo_usuario (id_usuario, id_grupo) VALUES (@idUsuario, 2);";
+                    const string rolSql = "INSERT INTO seg_grupo_usuario (id_usuario, id_grupo) VALUES (@idUsuario, @idGrupo);";
                     await using var cmdRol = new MySqlCommand(rolSql, conn);
                     cmdRol.Parameters.AddWithValue("@idUsuario", newId);
+                    cmdRol.Parameters.AddWithValue("@idGrupo", idGrupoDestino);
                     await cmdRol.ExecuteNonQueryAsync();
                 }
                 catch { }

@@ -22,7 +22,7 @@ namespace SysPuntoVenta.Backend.Controllers
         }
 
         /// <summary>
-        /// Obtiene la lista completa de clientes registrados.
+        /// Obtiene la lista completa de clientes registrados con su país y ciudad asociados.
         /// </summary>
         [HttpGet]
         public async Task<ActionResult<List<ClienteDto>>> GetAll()
@@ -33,7 +33,16 @@ namespace SysPuntoVenta.Backend.Controllers
                 await using var conn = _database.CreateConnection();
                 await conn.OpenAsync();
 
-                const string sql = "SELECT id, documento, nombre, telefono, direccion, email, create_at FROM clientes ORDER BY id DESC;";
+                const string sql = @"
+                    SELECT 
+                        c.id, c.documento, c.nombre, c.telefono, c.direccion, c.email, 
+                        c.idPais, c.idCiudad, c.create_at,
+                        COALESCE(p.descripcion, '') AS paisNombre,
+                        COALESCE(ci.descripcion, '') AS ciudadNombre
+                    FROM clientes c
+                    LEFT JOIN paises p ON c.idPais = p.id
+                    LEFT JOIN ciudades ci ON c.idCiudad = ci.id
+                    ORDER BY c.id DESC;";
                 await using var cmd = new MySqlCommand(sql, conn);
                 await using var r = await cmd.ExecuteReaderAsync();
                 while (await r.ReadAsync())
@@ -46,6 +55,10 @@ namespace SysPuntoVenta.Backend.Controllers
                         Telefono = r.SafeGetString("telefono"),
                         Direccion = r.SafeGetString("direccion"),
                         Email = r.SafeGetString("email"),
+                        IdPais = r.IsDBNull(r.GetOrdinal("idPais")) ? 1 : r.SafeGetInt32("idPais", 1),
+                        PaisNombre = r.SafeGetString("paisNombre"),
+                        IdCiudad = r.IsDBNull(r.GetOrdinal("idCiudad")) ? null : r.SafeGetInt32("idCiudad"),
+                        CiudadNombre = r.SafeGetString("ciudadNombre"),
                         CreateAt = r.SafeGetDateTime("create_at")
                     });
                 }
@@ -59,7 +72,7 @@ namespace SysPuntoVenta.Backend.Controllers
         }
 
         /// <summary>
-        /// Obtiene un cliente por su ID numérico.
+        /// Obtiene un cliente por su ID numérico con detalle de su país y ciudad.
         /// </summary>
         [HttpGet("{id}")]
         public async Task<ActionResult<ClienteDto>> GetById(int id)
@@ -69,7 +82,16 @@ namespace SysPuntoVenta.Backend.Controllers
                 await using var conn = _database.CreateConnection();
                 await conn.OpenAsync();
 
-                const string sql = "SELECT id, documento, nombre, telefono, direccion, email, create_at FROM clientes WHERE id = @id LIMIT 1;";
+                const string sql = @"
+                    SELECT 
+                        c.id, c.documento, c.nombre, c.telefono, c.direccion, c.email, 
+                        c.idPais, c.idCiudad, c.create_at,
+                        COALESCE(p.descripcion, '') AS paisNombre,
+                        COALESCE(ci.descripcion, '') AS ciudadNombre
+                    FROM clientes c
+                    LEFT JOIN paises p ON c.idPais = p.id
+                    LEFT JOIN ciudades ci ON c.idCiudad = ci.id
+                    WHERE c.id = @id LIMIT 1;";
                 await using var cmd = new MySqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@id", id);
                 await using var r = await cmd.ExecuteReaderAsync();
@@ -83,6 +105,10 @@ namespace SysPuntoVenta.Backend.Controllers
                         Telefono = r.SafeGetString("telefono"),
                         Direccion = r.SafeGetString("direccion"),
                         Email = r.SafeGetString("email"),
+                        IdPais = r.IsDBNull(r.GetOrdinal("idPais")) ? 1 : r.SafeGetInt32("idPais", 1),
+                        PaisNombre = r.SafeGetString("paisNombre"),
+                        IdCiudad = r.IsDBNull(r.GetOrdinal("idCiudad")) ? null : r.SafeGetInt32("idCiudad"),
+                        CiudadNombre = r.SafeGetString("ciudadNombre"),
                         CreateAt = r.SafeGetDateTime("create_at")
                     });
                 }
@@ -95,7 +121,7 @@ namespace SysPuntoVenta.Backend.Controllers
         }
 
         /// <summary>
-        /// Busca clientes por coincidencia en documento o nombre.
+        /// Busca clientes por coincidencia en documento o nombre, incluyendo información geográfica.
         /// </summary>
         [HttpGet("buscar")]
         public async Task<ActionResult<List<ClienteDto>>> Buscar([FromQuery] string q)
@@ -107,10 +133,16 @@ namespace SysPuntoVenta.Backend.Controllers
                 await conn.OpenAsync();
 
                 const string sql = @"
-                    SELECT id, documento, nombre, telefono, direccion, email, create_at 
-                    FROM clientes 
-                    WHERE documento LIKE @filtro OR nombre LIKE @filtro 
-                    ORDER BY id DESC LIMIT 50;";
+                    SELECT 
+                        c.id, c.documento, c.nombre, c.telefono, c.direccion, c.email, 
+                        c.idPais, c.idCiudad, c.create_at,
+                        COALESCE(p.descripcion, '') AS paisNombre,
+                        COALESCE(ci.descripcion, '') AS ciudadNombre
+                    FROM clientes c
+                    LEFT JOIN paises p ON c.idPais = p.id
+                    LEFT JOIN ciudades ci ON c.idCiudad = ci.id
+                    WHERE c.documento LIKE @filtro OR c.nombre LIKE @filtro 
+                    ORDER BY c.id DESC LIMIT 50;";
                 await using var cmd = new MySqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@filtro", $"%{q}%");
                 await using var r = await cmd.ExecuteReaderAsync();
@@ -124,6 +156,10 @@ namespace SysPuntoVenta.Backend.Controllers
                         Telefono = r.SafeGetString("telefono"),
                         Direccion = r.SafeGetString("direccion"),
                         Email = r.SafeGetString("email"),
+                        IdPais = r.IsDBNull(r.GetOrdinal("idPais")) ? 1 : r.SafeGetInt32("idPais", 1),
+                        PaisNombre = r.SafeGetString("paisNombre"),
+                        IdCiudad = r.IsDBNull(r.GetOrdinal("idCiudad")) ? null : r.SafeGetInt32("idCiudad"),
+                        CiudadNombre = r.SafeGetString("ciudadNombre"),
                         CreateAt = r.SafeGetDateTime("create_at")
                     });
                 }
@@ -137,7 +173,7 @@ namespace SysPuntoVenta.Backend.Controllers
         }
 
         /// <summary>
-        /// Crea un nuevo cliente o actualiza uno existente según su ID.
+        /// Crea un nuevo cliente o actualiza uno existente según su ID, guardando país y ciudad.
         /// </summary>
         [HttpPost]
         public async Task<ActionResult<RespuestaOperacion>> Save([FromBody] ClienteDto cliente)
@@ -166,8 +202,8 @@ namespace SysPuntoVenta.Backend.Controllers
                     }
 
                     const string insertSql = @"
-                        INSERT INTO clientes (documento, nombre, telefono, direccion, email, create_at) 
-                        VALUES (@doc, @nom, @tel, @dir, @email, NOW());
+                        INSERT INTO clientes (documento, nombre, telefono, direccion, email, idPais, idCiudad, create_at) 
+                        VALUES (@doc, @nom, @tel, @dir, @email, @idPais, @idCiudad, NOW());
                         SELECT LAST_INSERT_ID();";
 
                     await using var cmd = new MySqlCommand(insertSql, conn);
@@ -176,6 +212,8 @@ namespace SysPuntoVenta.Backend.Controllers
                     cmd.Parameters.AddWithValue("@tel", cliente.Telefono ?? "");
                     cmd.Parameters.AddWithValue("@dir", cliente.Direccion ?? "");
                     cmd.Parameters.AddWithValue("@email", cliente.Email ?? "");
+                    cmd.Parameters.AddWithValue("@idPais", (object?)cliente.IdPais ?? 1);
+                    cmd.Parameters.AddWithValue("@idCiudad", (object?)cliente.IdCiudad ?? DBNull.Value);
 
                     var newId = Convert.ToInt32(await cmd.ExecuteScalarAsync());
                     return Ok(new RespuestaOperacion { Exito = true, Mensaje = "Cliente registrado con éxito", IdGenerado = newId });
@@ -184,7 +222,8 @@ namespace SysPuntoVenta.Backend.Controllers
                 {
                     const string updateSql = @"
                         UPDATE clientes 
-                        SET documento = @doc, nombre = @nom, telefono = @tel, direccion = @dir, email = @email 
+                        SET documento = @doc, nombre = @nom, telefono = @tel, direccion = @dir, 
+                            email = @email, idPais = @idPais, idCiudad = @idCiudad 
                         WHERE id = @id;";
 
                     await using var cmd = new MySqlCommand(updateSql, conn);
@@ -194,6 +233,8 @@ namespace SysPuntoVenta.Backend.Controllers
                     cmd.Parameters.AddWithValue("@tel", cliente.Telefono ?? "");
                     cmd.Parameters.AddWithValue("@dir", cliente.Direccion ?? "");
                     cmd.Parameters.AddWithValue("@email", cliente.Email ?? "");
+                    cmd.Parameters.AddWithValue("@idPais", (object?)cliente.IdPais ?? 1);
+                    cmd.Parameters.AddWithValue("@idCiudad", (object?)cliente.IdCiudad ?? DBNull.Value);
 
                     await cmd.ExecuteNonQueryAsync();
                     return Ok(new RespuestaOperacion { Exito = true, Mensaje = "Cliente actualizado correctamente", IdGenerado = cliente.Id });

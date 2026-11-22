@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -12,6 +13,8 @@ namespace SysPuntoVenta.Frontend.Views
     public partial class ClientesControl : UserControl
     {
         private int _idClienteSeleccionado = 0;
+        private List<PaisDto> _paises = new();
+        private List<CiudadDto> _todasLasCiudades = new();
 
         public ClientesControl()
         {
@@ -21,7 +24,62 @@ namespace SysPuntoVenta.Frontend.Views
 
         private async void ClientesControl_Loaded(object sender, RoutedEventArgs e)
         {
+            await CargarCatalogosAsync();
             await CargarClientesAsync();
+        }
+
+        /// <summary>
+        /// Carga los catálogos de Países y Ciudades desde la API REST para el enlace en cascada.
+        /// </summary>
+        private async Task CargarCatalogosAsync()
+        {
+            try
+            {
+                _paises = await ApiClient.GetPaisesAsync();
+                _todasLasCiudades = await ApiClient.GetCiudadesAsync();
+
+                cbPais.ItemsSource = _paises;
+                if (_paises.Any())
+                {
+                    cbPais.SelectedValue = 1; // Paraguay por defecto
+                    ActualizarCiudadesPorPais(1);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al cargar catálogos geográficos: {ex.Message}", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        /// <summary>
+        /// Filtra y actualiza el ComboBox de ciudades según el país seleccionado.
+        /// </summary>
+        /// <param name="idPais">Identificador único del país seleccionado.</param>
+        private void ActualizarCiudadesPorPais(int idPais)
+        {
+            var filtradas = _todasLasCiudades.Where(c => c.IdPais == idPais).ToList();
+            cbCiudad.ItemsSource = filtradas;
+            if (filtradas.Any())
+            {
+                cbCiudad.SelectedIndex = 0;
+            }
+            else
+            {
+                cbCiudad.SelectedIndex = -1;
+            }
+        }
+
+        /// <summary>
+        /// Evento disparado cuando el usuario cambia el país en el ComboBox, actualizando en cascada las ciudades correspondientes.
+        /// </summary>
+        /// <param name="sender">ComboBox de país.</param>
+        /// <param name="e">Argumentos de cambio de selección.</param>
+        private void CbPais_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (cbPais.SelectedValue is int idPais)
+            {
+                ActualizarCiudadesPorPais(idPais);
+            }
         }
 
         private async Task CargarClientesAsync(string filtro = "")
@@ -53,6 +111,9 @@ namespace SysPuntoVenta.Frontend.Views
                 return;
             }
 
+            int? idPais = cbPais.SelectedValue as int?;
+            int? idCiudad = cbCiudad.SelectedValue as int?;
+
             var cliente = new ClienteDto
             {
                 Id = _idClienteSeleccionado,
@@ -60,7 +121,9 @@ namespace SysPuntoVenta.Frontend.Views
                 Nombre = txtNombre.Text.Trim(),
                 Telefono = txtTelefono.Text.Trim(),
                 Direccion = txtDireccion.Text.Trim(),
-                Email = txtEmail.Text.Trim()
+                Email = txtEmail.Text.Trim(),
+                IdPais = idPais ?? 1,
+                IdCiudad = idCiudad
             };
 
             btnGuardar.IsEnabled = false;
@@ -99,6 +162,15 @@ namespace SysPuntoVenta.Frontend.Views
                 txtTelefono.Text = c.Telefono;
                 txtDireccion.Text = c.Direccion;
                 txtEmail.Text = c.Email;
+
+                int paisId = c.IdPais ?? 1;
+                cbPais.SelectedValue = paisId;
+                ActualizarCiudadesPorPais(paisId);
+
+                if (c.IdCiudad.HasValue)
+                {
+                    cbCiudad.SelectedValue = c.IdCiudad.Value;
+                }
 
                 btnGuardar.Content = "💾 Actualizar Cliente";
                 btnEliminar.IsEnabled = true;
@@ -145,6 +217,8 @@ namespace SysPuntoVenta.Frontend.Views
             txtTelefono.Text = "";
             txtDireccion.Text = "";
             txtEmail.Text = "";
+            cbPais.SelectedValue = 1;
+            ActualizarCiudadesPorPais(1);
             btnGuardar.Content = "💾 Guardar Cliente";
             btnEliminar.IsEnabled = false;
             dgClientes.SelectedItem = null;

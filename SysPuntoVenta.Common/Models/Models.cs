@@ -33,6 +33,10 @@ namespace SysPuntoVenta.Common.Models
         [DataMember] public string Telefono { get; set; } = string.Empty;
         [DataMember] public string Direccion { get; set; } = string.Empty;
         [DataMember] public string Email { get; set; } = string.Empty;
+        [DataMember] public int? IdPais { get; set; } = 1;
+        [DataMember] public string PaisNombre { get; set; } = string.Empty;
+        [DataMember] public int? IdCiudad { get; set; }
+        [DataMember] public string CiudadNombre { get; set; } = string.Empty;
         [DataMember] public DateTime? CreateAt { get; set; }
     }
 
@@ -172,6 +176,17 @@ namespace SysPuntoVenta.Common.Models
         [DataMember] public string Email { get; set; } = string.Empty;
         [DataMember] public int? IdCiudad { get; set; }
         [DataMember] public int? IdPais { get; set; }
+        [DataMember] public string Rol { get; set; } = string.Empty;
+    }
+
+    [DataContract]
+    public class GoogleLoginRequest
+    {
+        [DataMember] public string IdToken { get; set; } = string.Empty;
+        [DataMember] public string? EmailSimulado { get; set; }
+        [DataMember] public string? NombreSimulado { get; set; }
+        [DataMember] public string? ApellidoSimulado { get; set; }
+        [DataMember] public string? AvatarSimulado { get; set; }
     }
 
     [DataContract]

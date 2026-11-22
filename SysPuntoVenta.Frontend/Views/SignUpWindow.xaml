@@ -55,6 +55,16 @@
                 <TextBox x:Name="txtEmail" Height="29" />
             </StackPanel>
 
+            <!-- Fila 4: Rol / Permisos (Solo visible para Administradores) -->
+            <StackPanel x:Name="panelRol" Margin="0,0,0,12" Visibility="Collapsed">
+                <TextBlock Text="Rol / Perfil de Acceso (Privilegio Administrador)" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource BrushTextSecondary}" Margin="0,0,0,3" />
+                <ComboBox x:Name="cbRol" Height="29">
+                    <ComboBoxItem Content="Operador" IsSelected="True" />
+                    <ComboBoxItem Content="Vendedor" />
+                    <ComboBoxItem Content="Administrador" />
+                </ComboBox>
+            </StackPanel>
+
             <!-- Mensaje de Estado / Error -->
             <TextBlock x:Name="lblMensaje" Text="" Foreground="{DynamicResource BrushDanger}" FontSize="11" Margin="0,0,0,12" TextWrapping="Wrap" />
 

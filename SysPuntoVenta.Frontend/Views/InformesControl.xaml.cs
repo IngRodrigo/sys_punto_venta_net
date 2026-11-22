@@ -194,12 +194,14 @@ namespace SysPuntoVenta.Frontend.Views
             var itemsAExportar = (dgClientes.ItemsSource as IEnumerable<ClienteDto>) ?? _clientesOriginales;
             var columnas = new List<ReporteColumna<ClienteDto>>
             {
-                new() { Titulo = "ID", AnchoRelativo = 0.6f, SelectorValor = c => c.Id.ToString() },
+                new() { Titulo = "ID", AnchoRelativo = 0.5f, SelectorValor = c => c.Id.ToString() },
                 new() { Titulo = "RUC / C.I.", AnchoRelativo = 1.3f, SelectorValor = c => c.Documento },
-                new() { Titulo = "Nombre o Razón Social", AnchoRelativo = 2.5f, SelectorValor = c => c.Nombre },
-                new() { Titulo = "Teléfono / WhatsApp", AnchoRelativo = 1.4f, SelectorValor = c => c.Telefono },
-                new() { Titulo = "Dirección", AnchoRelativo = 2.2f, SelectorValor = c => c.Direccion },
-                new() { Titulo = "Correo Electrónico", AnchoRelativo = 2.0f, SelectorValor = c => c.Email }
+                new() { Titulo = "Nombre o Razón Social", AnchoRelativo = 2.4f, SelectorValor = c => c.Nombre },
+                new() { Titulo = "Teléfono", AnchoRelativo = 1.2f, SelectorValor = c => c.Telefono },
+                new() { Titulo = "País", AnchoRelativo = 1.0f, SelectorValor = c => c.PaisNombre },
+                new() { Titulo = "Ciudad", AnchoRelativo = 1.2f, SelectorValor = c => c.CiudadNombre },
+                new() { Titulo = "Dirección", AnchoRelativo = 1.8f, SelectorValor = c => c.Direccion },
+                new() { Titulo = "Correo Electrónico", AnchoRelativo = 1.8f, SelectorValor = c => c.Email }
             };
 
             string filtro = string.IsNullOrWhiteSpace(txtFiltroCliente.Text)

@@ -61,10 +61,27 @@
                     </StackPanel>
 
                     <!-- Fila 4: Correo Electrónico -->
-                    <StackPanel Margin="0,0,0,14">
+                    <StackPanel Margin="0,0,0,8">
                         <TextBlock Text="Correo Electrónico" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BrushTextSecondary}" Margin="0,0,0,3" />
                         <TextBox x:Name="txtEmail" Height="29" />
                     </StackPanel>
+
+                    <!-- Fila 5: País y Ciudad con selección en cascada -->
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="10" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="País" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BrushTextSecondary}" Margin="0,0,0,3" />
+                            <ComboBox x:Name="cbPais" Height="29" DisplayMemberPath="Descripcion" SelectedValuePath="Id" SelectionChanged="CbPais_SelectionChanged" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="Ciudad" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource BrushTextSecondary}" Margin="0,0,0,3" />
+                            <ComboBox x:Name="cbCiudad" Height="29" DisplayMemberPath="Descripcion" SelectedValuePath="Id" />
+                        </StackPanel>
+                    </Grid>
 
                     <!-- Botones de Acción -->
                     <Button x:Name="btnGuardar" Style="{DynamicResource BtnPrimary}" Height="32" Margin="0,0,0,8" Click="BtnGuardar_Click">
@@ -121,8 +138,10 @@
                             <DataGridTextColumn Header="DOCUMENTO" Binding="{Binding Documento}" Width="110" />
                             <DataGridTextColumn Header="NOMBRE / RAZÓN SOCIAL" Binding="{Binding Nombre}" Width="*" />
                             <DataGridTextColumn Header="TELÉFONO" Binding="{Binding Telefono}" Width="105" />
-                            <DataGridTextColumn Header="DIRECCIÓN" Binding="{Binding Direccion}" Width="130" />
-                            <DataGridTextColumn Header="EMAIL" Binding="{Binding Email}" Width="140" />
+                            <DataGridTextColumn Header="PAÍS" Binding="{Binding PaisNombre}" Width="85" />
+                            <DataGridTextColumn Header="CIUDAD" Binding="{Binding CiudadNombre}" Width="100" />
+                            <DataGridTextColumn Header="DIRECCIÓN" Binding="{Binding Direccion}" Width="120" />
+                            <DataGridTextColumn Header="EMAIL" Binding="{Binding Email}" Width="130" />
                         </DataGrid.Columns>
                     </DataGrid>
                 </Grid>

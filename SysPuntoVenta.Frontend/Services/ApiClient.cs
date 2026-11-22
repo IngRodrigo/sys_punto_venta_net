@@ -72,6 +72,34 @@ namespace SysPuntoVenta.Frontend.Services
         }
 
         /// <summary>
+        /// Inicia sesión o auto-registra al usuario mediante el flujo de autenticación de Google OAuth 2.0 / token ID.
+        /// Soporta tanto el modo de desarrollo simulado como la validación de tokens reales en producción.
+        /// </summary>
+        /// <param name="req">Petición con el token ID o perfil simulado de Google.</param>
+        /// <returns>Respuesta de login con el token JWT Bearer y datos del usuario autenticado.</returns>
+        public static async Task<LoginResponse> GoogleLoginAsync(GoogleLoginRequest req)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync($"{BaseUrl}/auth/google-login", req);
+                var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+
+                if (result != null && result.Autenticado)
+                {
+                    AccessToken = result.AccessToken;
+                    RefreshToken = result.RefreshToken;
+                    SetAuthHeader(result.AccessToken);
+                }
+
+                return result ?? new LoginResponse { Autenticado = false, Mensaje = "Sin respuesta del servidor" };
+            }
+            catch (Exception ex)
+            {
+                return new LoginResponse { Autenticado = false, Mensaje = ex.Message };
+            }
+        }
+
+        /// <summary>
         /// Renueva silenciosamente el Access Token utilizando el Refresh Token almacenado cuando se recibe un 401.
         /// </summary>
         /// <returns>True si la renovación fue exitosa y se actualizaron los tokens.</returns>

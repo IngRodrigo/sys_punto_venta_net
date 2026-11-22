@@ -114,6 +114,78 @@ namespace SysPuntoVenta.Backend.Data
                     Console.WriteLine("✔ Columna 'email' agregada a tabla 'clientes'.");
                 }
 
+                // Asegurar columnas idPais e idCiudad en tabla clientes
+                const string checkPaisColSql = @"
+                    SELECT COUNT(*) 
+                    FROM INFORMATION_SCHEMA.COLUMNS 
+                    WHERE TABLE_SCHEMA = 'sys_facturacion' 
+                      AND TABLE_NAME = 'clientes' 
+                      AND COLUMN_NAME = 'idPais';";
+                await using var cmdCheckPais = new MySqlCommand(checkPaisColSql, conn);
+                var existsPais = Convert.ToInt32(await cmdCheckPais.ExecuteScalarAsync()) > 0;
+                if (!existsPais)
+                {
+                    const string alterPaisSql = "ALTER TABLE `clientes` ADD COLUMN `idPais` INT NULL DEFAULT 1 AFTER `email`, ADD COLUMN `idCiudad` INT NULL AFTER `idPais`;";
+                    await using var cmdAlterPais = new MySqlCommand(alterPaisSql, conn);
+                    await cmdAlterPais.ExecuteNonQueryAsync();
+                    Console.WriteLine("✔ Columnas 'idPais' e 'idCiudad' agregadas a tabla 'clientes'.");
+                }
+
+                // Asegurar columnas google_id, proveedor_auth, avatar_url en seg_usuarios
+                const string checkGoogleColSql = @"
+                    SELECT COUNT(*) 
+                    FROM INFORMATION_SCHEMA.COLUMNS 
+                    WHERE TABLE_SCHEMA = 'sys_facturacion' 
+                      AND TABLE_NAME = 'seg_usuarios' 
+                      AND COLUMN_NAME = 'google_id';";
+                await using var cmdCheckGoogle = new MySqlCommand(checkGoogleColSql, conn);
+                var existsGoogle = Convert.ToInt32(await cmdCheckGoogle.ExecuteScalarAsync()) > 0;
+                if (!existsGoogle)
+                {
+                    const string alterGoogleSql = @"
+                        ALTER TABLE `seg_usuarios` 
+                        ADD COLUMN `google_id` VARCHAR(100) NULL UNIQUE AFTER `email`,
+                        ADD COLUMN `proveedor_auth` VARCHAR(20) NOT NULL DEFAULT 'LOCAL' AFTER `google_id`,
+                        ADD COLUMN `avatar_url` VARCHAR(255) NULL AFTER `proveedor_auth`;";
+                    await using var cmdAlterGoogle = new MySqlCommand(alterGoogleSql, conn);
+                    await cmdAlterGoogle.ExecuteNonQueryAsync();
+                    Console.WriteLine("✔ Columnas 'google_id', 'proveedor_auth' y 'avatar_url' agregadas a 'seg_usuarios'.");
+                }
+
+                // Asegurar grupos de seguridad (Administradores, Vendedores, Operadores)
+                const string sqlGrupos = @"
+                    INSERT IGNORE INTO `seg_grupos` (`id`, `nombre`, `descripcion`) VALUES 
+                    (1, 'Administradores', 'Control total y administración del sistema'),
+                    (2, 'Vendedores', 'Ventas y facturación comercial'),
+                    (3, 'Operadores', 'Operadores del sistema / cajeros generales');";
+                await using var cmdGrupos = new MySqlCommand(sqlGrupos, conn);
+                await cmdGrupos.ExecuteNonQueryAsync();
+
+                // Asegurar catálogo de países y ciudades por defecto
+                const string sqlPaisesCiudades = @"
+                    INSERT IGNORE INTO `paises` (`id`, `descripcion`, `codigo_iso`) VALUES 
+                    (1, 'Paraguay', 'PRY'),
+                    (2, 'Argentina', 'ARG'),
+                    (3, 'Brasil', 'BRA'),
+                    (4, 'Chile', 'CHL'),
+                    (5, 'Uruguay', 'URY');
+
+                    INSERT IGNORE INTO `ciudades` (`id`, `descripcion`, `idPais`) VALUES 
+                    (1, 'Asunción', 1),
+                    (2, 'Ciudad del Este', 1),
+                    (3, 'Encarnación', 1),
+                    (4, 'San Lorenzo', 1),
+                    (5, 'Luque', 1),
+                    (6, 'Buenos Aires', 2),
+                    (7, 'Córdoba', 2),
+                    (8, 'Rosario', 2),
+                    (9, 'São Paulo', 3),
+                    (10, 'Río de Janeiro', 3),
+                    (11, 'Santiago', 4),
+                    (12, 'Montevideo', 5);";
+                await using var cmdPaisesCiudades = new MySqlCommand(sqlPaisesCiudades, conn);
+                await cmdPaisesCiudades.ExecuteNonQueryAsync();
+
                 // Asegurar tabla seg_refresh_tokens para JWT
                 const string createRefreshTokensSql = @"
                     CREATE TABLE IF NOT EXISTS `seg_refresh_tokens` (

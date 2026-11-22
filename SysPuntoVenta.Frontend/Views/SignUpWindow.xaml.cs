@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 using SysPuntoVenta.Common.Models;
 using SysPuntoVenta.Frontend.Services;
@@ -12,6 +13,20 @@ namespace SysPuntoVenta.Frontend.Views
         public SignUpWindow()
         {
             InitializeComponent();
+            ConfigurarPermisosRol();
+        }
+
+        /// <summary>
+        /// Evalúa los privilegios del usuario en sesión activa. Si es Administrador, permite la asignación manual
+        /// de perfiles de acceso (incluido nuevo Administrador); de lo contrario, oculta el selector y asigna 'Operador' por defecto.
+        /// </summary>
+        private void ConfigurarPermisosRol()
+        {
+            bool esAdmin = UserSession.CurrentUser != null && 
+                           (UserSession.CurrentUser.Rol.Equals("Administrador", StringComparison.OrdinalIgnoreCase) || 
+                            UserSession.CurrentUser.Rol.Equals("Administradores", StringComparison.OrdinalIgnoreCase));
+
+            panelRol.Visibility = esAdmin ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private async void BtnGuardar_Click(object sender, RoutedEventArgs e)
@@ -32,13 +47,20 @@ namespace SysPuntoVenta.Frontend.Views
 
             try
             {
+                string rolSeleccionado = "Operador";
+                if (panelRol.Visibility == Visibility.Visible && cbRol.SelectedItem is ComboBoxItem item)
+                {
+                    rolSeleccionado = item.Content.ToString() ?? "Operador";
+                }
+
                 var resp = await ApiClient.RegistrarUsuarioAsync(new RegistroUsuarioRequest
                 {
                     Nombre = txtNombre.Text.Trim(),
                     Apellido = txtApellido.Text.Trim(),
                     UserName = txtUsuario.Text.Trim(),
                     Password = txtPassword.Password,
-                    Email = txtEmail.Text.Trim()
+                    Email = txtEmail.Text.Trim(),
+                    Rol = rolSeleccionado
                 });
 
                 if (resp.Exito)
