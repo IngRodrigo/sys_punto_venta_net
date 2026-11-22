@@ -1,0 +1,45 @@
+<UserControl x:Class="SysPuntoVenta.Frontend.Views.UsuariosControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{DynamicResource BrushBackground}">
+    <Grid Margin="16,14">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Margin="0,0,0,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="USUARIOS DEL SISTEMA" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource BrushTextPrimary}" />
+                    <TextBlock Text="Listado consolidado de usuarios, credenciales y grupos de acceso" FontSize="11" Foreground="{DynamicResource BrushTextSecondary}" Margin="0,2,0,0" />
+                </StackPanel>
+                <Button Grid.Column="1" Style="{DynamicResource BtnPrimary}" Height="30" Padding="12,0" Click="BtnNuevoUsuario_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="➕" Margin="0,0,5,0" FontSize="10" VerticalAlignment="Center" />
+                        <TextBlock Text="Nuevo Usuario" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </Border>
+
+        <Border Grid.Row="1" Background="{DynamicResource BrushSurfaceCard}" Padding="14,12" CornerRadius="8" BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1">
+            <DataGrid x:Name="dgUsuarios" RowHeight="28" FontSize="11.5">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="45" />
+                    <DataGridTextColumn Header="NOMBRE" Binding="{Binding Nombre}" Width="120" />
+                    <DataGridTextColumn Header="APELLIDO" Binding="{Binding Apellido}" Width="120" />
+                    <DataGridTextColumn Header="USUARIO" Binding="{Binding UserName}" Width="105" />
+                    <DataGridTextColumn Header="EMAIL" Binding="{Binding Email}" Width="180" />
+                    <DataGridTextColumn Header="ROL / GRUPO" Binding="{Binding Rol}" Width="120" />
+                    <DataGridTextColumn Header="CIUDAD" Binding="{Binding Ciudad}" Width="110" />
+                    <DataGridTextColumn Header="PAÍS" Binding="{Binding Pais}" Width="95" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+    </Grid>
+</UserControl>

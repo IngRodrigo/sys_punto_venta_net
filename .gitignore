@@ -1,0 +1,80 @@
+## ==============================================================================
+## .gitignore para proyectos .NET / Visual Studio / C# (.NET 9)
+## SysFacturación - Sistema Punto de Venta & Facturación
+## ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Carpetas de Compilación y Artefactos Binarios
+# ------------------------------------------------------------------------------
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+[Tt]emp/
+[Tt]est[Rr]esults/
+build/
+dist/
+publish/
+
+# ------------------------------------------------------------------------------
+# Archivos de Configuración de Usuario y Caché de Visual Studio
+# ------------------------------------------------------------------------------
+.vs/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.sln.docstates
+SysPuntoVenta.slnLaunch.user
+
+# ------------------------------------------------------------------------------
+# Paquetes NuGet y Caché de Dependencias
+# ------------------------------------------------------------------------------
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+!**/packages.config
+
+# ------------------------------------------------------------------------------
+# Configuraciones y Entornos de Desarrollo Local / Secretos
+# ------------------------------------------------------------------------------
+appsettings.Local.json
+appsettings.*.Local.json
+*.local.json
+.env
+.env.*
+!.env.example
+
+# ------------------------------------------------------------------------------
+# Herramientas y Editores (VS Code, JetBrains Rider)
+# ------------------------------------------------------------------------------
+.idea/
+*.DotSettings.user
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# ------------------------------------------------------------------------------
+# Archivos Temporales y del Sistema Operativo (Windows / Mac)
+# ------------------------------------------------------------------------------
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ------------------------------------------------------------------------------
+# Volcados de Memoria (Crash Dumps) y Archivos de Diagnóstico
+# ------------------------------------------------------------------------------
+*.dmp
+*.mdmp
+*.crash
+*.tmp
+*.bak
+*.swp
+*~

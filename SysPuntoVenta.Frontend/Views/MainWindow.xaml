@@ -1,0 +1,121 @@
+<Window x:Class="SysPuntoVenta.Frontend.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="SysFacturación - Sistema Punto de Venta &amp; Facturación" 
+        Height="760" Width="1200"
+        MinHeight="580" MinWidth="880"
+        WindowStartupLocation="CenterScreen"
+        WindowState="Maximized"
+        Background="{DynamicResource BrushBackground}">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="225" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Barra Lateral Izquierda Compacta y Minimalista -->
+        <Border Grid.Column="0" Background="{DynamicResource BrushSidebarGradient}" BorderBrush="{DynamicResource BrushBorder}" BorderThickness="0,0,1,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- Logotipo e Identidad -->
+                <StackPanel Grid.Row="0" Margin="16,16,16,12">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Width="34" Height="34" CornerRadius="8" Background="{DynamicResource BrushAccentGradient}" Margin="0,0,10,0">
+                            <TextBlock Text="⚡" FontSize="17" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="SYS FACTURACIÓN" FontSize="13.5" FontWeight="Bold" Foreground="{DynamicResource BrushTextPrimary}" />
+                            <TextBlock Text="REST JSON • .NET 9" FontSize="9.5" Foreground="{DynamicResource BrushCyan}" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Tarjeta Usuario Logueado Compacta -->
+                <Border Grid.Row="1" Background="{DynamicResource BrushSurfaceCard}" Margin="12,0,12,14" Padding="10,8" CornerRadius="6" BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" Width="30" Height="30" CornerRadius="15" Background="{DynamicResource BrushPrimaryDark}" Margin="0,0,8,0">
+                            <TextBlock x:Name="lblAvatar" Text="A" FontWeight="Bold" FontSize="13" Foreground="#FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock x:Name="lblUsuarioNombre" Text="Admin" FontSize="11.5" FontWeight="Bold" Foreground="{DynamicResource BrushTextPrimary}" />
+                            <TextBlock x:Name="lblUsuarioRol" Text="Administrador" FontSize="9.5" Foreground="{DynamicResource BrushPrimary}" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Menú de Navegación Vertical Minimalista -->
+                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="10,0">
+                        <TextBlock Text="PRINCIPAL" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource BrushTextSecondary}" Margin="8,0,0,5" />
+                        
+                        <Button x:Name="btnNavDashboard" Content="📊 Panel / Dashboard" Style="{DynamicResource BtnOutline}" HorizontalContentAlignment="Left" Height="34" Margin="0,0,0,4" Click="BtnNavDashboard_Click" />
+                        <Button x:Name="btnNavFacturacion" Content="⚡ Facturación (POS)" Style="{DynamicResource BtnOutline}" HorizontalContentAlignment="Left" Height="34" Margin="0,0,0,4" Click="BtnNavFacturacion_Click" />
+                        
+                        <TextBlock Text="GESTIÓN COMERCIAL" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource BrushTextSecondary}" Margin="8,10,0,5" />
+                        
+                        <Button x:Name="btnNavClientes" Content="👥 Cartera de Clientes" Style="{DynamicResource BtnOutline}" HorizontalContentAlignment="Left" Height="34" Margin="0,0,0,4" Click="BtnNavClientes_Click" />
+                        <Button x:Name="btnNavProductos" Content="📦 Catálogo de Productos" Style="{DynamicResource BtnOutline}" HorizontalContentAlignment="Left" Height="34" Margin="0,0,0,4" Click="BtnNavProductos_Click" />
+
+                        <TextBlock Text="INFORMES &amp; ESTADÍSTICAS" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource BrushTextSecondary}" Margin="8,10,0,5" />
+                        <Button x:Name="btnNavInformes" Content="📑 Módulo de Informes" Style="{DynamicResource BtnOutline}" HorizontalContentAlignment="Left" Height="34" Margin="0,0,0,4" Click="BtnNavInformes_Click" />
+
+                        <TextBlock Text="CONFIGURACIÓN" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource BrushTextSecondary}" Margin="8,10,0,5" />
+                        
+                        <Button x:Name="btnNavCiudades" Content="🏙 Ciudades &amp; Regiones" Style="{DynamicResource BtnOutline}" HorizontalContentAlignment="Left" Height="34" Margin="0,0,0,4" Click="BtnNavCiudades_Click" />
+                        <Button x:Name="btnNavUsuarios" Content="👤 Usuarios del Sistema" Style="{DynamicResource BtnOutline}" HorizontalContentAlignment="Left" Height="34" Margin="0,0,0,4" Click="BtnNavUsuarios_Click" />
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Botón Salir -->
+                <Border Grid.Row="3" Padding="12,10" BorderBrush="{DynamicResource BrushBorder}" BorderThickness="0,1,0,0">
+                    <Button Content="🚪 Cerrar Sesión" Style="{DynamicResource BtnOutline}" BorderBrush="{DynamicResource BrushDanger}" Foreground="{DynamicResource BrushDanger}" Height="30" Click="BtnSalir_Click" />
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- Área Principal de la Aplicación -->
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="46" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- Barra Superior (Top Header) Minimalista -->
+            <Border Grid.Row="0" Background="{DynamicResource BrushSurface}" BorderBrush="{DynamicResource BrushBorder}" BorderThickness="0,0,0,1" Padding="18,0">
+                <Grid VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock x:Name="lblTituloSeccion" Text="PANEL DE CONTROL &amp; DASHBOARD" FontSize="13.5" FontWeight="Bold" Foreground="{DynamicResource BrushTextPrimary}" />
+                        <TextBlock Text="Comunicación en tiempo real con API REST JSON (.NET 9)" FontSize="10" Foreground="{DynamicResource BrushTextSecondary}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <!-- Botón selector de Tema (Claro / Oscuro) -->
+                        <Button x:Name="btnToggleTheme" Content="☀️ Modo Claro" Style="{DynamicResource BtnOutline}" Height="28" Margin="0,0,10,0" Padding="10,3" Click="BtnToggleTheme_Click" />
+
+                        <Border Background="{DynamicResource BrushSurfaceCard}" Padding="10,4" CornerRadius="5" BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1">
+                            <TextBlock x:Name="lblFechaHora" Text="20/11/2026 22:00:00" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource BrushCyan}" />
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Contenedor Dinámico de Vistas -->
+            <ContentControl Grid.Row="1" x:Name="mainContentArea" />
+        </Grid>
+    </Grid>
+</Window>

@@ -1,0 +1,61 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- PALETA CYBER DARK / VIOLET -->
+    <Color x:Key="ColorBackground">#0B0F19</Color>
+    <Color x:Key="ColorSurface">#111625</Color>
+    <Color x:Key="ColorSurfaceCard">#161B2E</Color>
+    <Color x:Key="ColorBorder">#2E2856</Color>
+    <Color x:Key="ColorPrimary">#8B5CF6</Color>
+    <Color x:Key="ColorTextPrimary">#F8FAFC</Color>
+    <Color x:Key="ColorTextSecondary">#94A3B8</Color>
+
+    <SolidColorBrush x:Key="BrushBackground" Color="#0B0F19" />
+    <SolidColorBrush x:Key="BrushSurface" Color="#111625" />
+    <SolidColorBrush x:Key="BrushSurfaceCard" Color="#161B2E" />
+    <SolidColorBrush x:Key="BrushSurfaceCard2" Color="#1E1B4B" />
+    <SolidColorBrush x:Key="BrushBorder" Color="#2E2856" />
+    <SolidColorBrush x:Key="BrushBorderLight" Color="#4338CA" />
+    <SolidColorBrush x:Key="BrushPrimary" Color="#8B5CF6" />
+    <SolidColorBrush x:Key="BrushPrimaryDark" Color="#6D28D9" />
+    <SolidColorBrush x:Key="BrushSecondary" Color="#2563EB" />
+    <SolidColorBrush x:Key="BrushSecondaryHover" Color="#1D4ED8" />
+    <SolidColorBrush x:Key="BrushCyan" Color="#38BDF8" />
+    <SolidColorBrush x:Key="BrushTextPrimary" Color="#F8FAFC" />
+    <SolidColorBrush x:Key="BrushTextSecondary" Color="#94A3B8" />
+    <SolidColorBrush x:Key="BrushTextMuted" Color="#64748B" />
+    <SolidColorBrush x:Key="BrushDanger" Color="#EF4444" />
+    <SolidColorBrush x:Key="BrushSuccess" Color="#10B981" />
+
+    <!-- Controles -->
+    <SolidColorBrush x:Key="BrushControlBackground" Color="#171C2E" />
+    <SolidColorBrush x:Key="BrushControlForeground" Color="#F8FAFC" />
+    <SolidColorBrush x:Key="BrushReadOnlyBackground" Color="#111625" />
+    <SolidColorBrush x:Key="BrushReadOnlyForeground" Color="#A5B4FC" />
+
+    <!-- DataGrid -->
+    <SolidColorBrush x:Key="BrushDataGridHeader" Color="#1E1B4B" />
+    <SolidColorBrush x:Key="BrushDataGridRow" Color="#14192B" />
+    <SolidColorBrush x:Key="BrushDataGridAltRow" Color="#171E34" />
+
+    <!-- Badges e Iconos -->
+    <SolidColorBrush x:Key="BrushBadgeBackground" Color="#161B33" />
+    <SolidColorBrush x:Key="BrushBadgeBorder" Color="#2E2856" />
+    <SolidColorBrush x:Key="BrushCardIcon" Color="#1E1B4B" />
+
+    <!-- Gradientes -->
+    <LinearGradientBrush x:Key="BrushAccentGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#2563EB" Offset="0.0" />
+        <GradientStop Color="#7C3AED" Offset="0.5" />
+        <GradientStop Color="#9333EA" Offset="1.0" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="BrushCardGradient" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#181B34" Offset="0.0" />
+        <GradientStop Color="#121526" Offset="1.0" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="BrushSidebarGradient" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#0F1423" Offset="0.0" />
+        <GradientStop Color="#19163B" Offset="1.0" />
+    </LinearGradientBrush>
+</ResourceDictionary>

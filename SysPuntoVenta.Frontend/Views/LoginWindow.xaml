@@ -1,0 +1,103 @@
+<Window x:Class="SysPuntoVenta.Frontend.Views.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="SysFacturación - Inicio de Sesión" 
+        Height="480" Width="780"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        Background="{DynamicResource BrushBackground}">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="330" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Panel Lateral Izquierdo: Branding Azul & Violeta Dinámico -->
+        <Border Grid.Column="0" Background="{DynamicResource BrushSidebarGradient}" BorderBrush="{DynamicResource BrushBorder}" BorderThickness="0,0,1,0">
+            <Grid Margin="26">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- Header de Marca -->
+                <StackPanel Grid.Row="0" Margin="0,10,0,0">
+                    <Border Width="48" Height="48" CornerRadius="12" Background="{DynamicResource BrushAccentGradient}" HorizontalAlignment="Left" Margin="0,0,0,12">
+                        <TextBlock Text="⚡" FontSize="22" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <TextBlock Text="SYS FACTURACIÓN" FontSize="19" FontWeight="Bold" Foreground="{DynamicResource BrushTextPrimary}" />
+                    <TextBlock Text="Punto de Venta &amp; Gestión" FontSize="12" Foreground="{DynamicResource BrushCyan}" Margin="0,2,0,0" />
+                </StackPanel>
+
+                <!-- Info central -->
+                <StackPanel Grid.Row="1" VerticalAlignment="Center">
+                    <TextBlock Text="Solución Empresarial" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource BrushTextPrimary}" />
+                    <TextBlock Text="Gestiona tu empresa con arquitectura moderna en tiempo real" 
+                               TextWrapping="Wrap" Foreground="{DynamicResource BrushTextSecondary}" FontSize="11.5" Margin="0,6,0,0" LineHeight="17" />
+                    
+                    <Border Margin="0,16,0,0" Padding="10,8" Background="{DynamicResource BrushBadgeBackground}" BorderBrush="{DynamicResource BrushBadgeBorder}" BorderThickness="1" CornerRadius="6">
+                        <StackPanel>
+                            <TextBlock Text="ESTADO DEL SERVICIO" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource BrushPrimary}" />
+                            <TextBlock x:Name="lblServerStatus" Text="Verificando servicios..." FontSize="10.5" Foreground="{DynamicResource BrushTextSecondary}" Margin="0,3,0,0" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Footer -->
+                <TextBlock Grid.Row="2" Text="© 2026 SysPuntoVenta. Todos los derechos reservados." 
+                           FontSize="10" Foreground="{DynamicResource BrushTextMuted}" HorizontalAlignment="Left" />
+            </Grid>
+        </Border>
+
+        <!-- Panel Derecho: Formulario de Login Minimalista -->
+        <Border Grid.Column="1" Background="{DynamicResource BrushSurface}" Padding="40,24">
+            <Grid>
+                <!-- Botón Modo Claro / Oscuro en Login -->
+                <Button x:Name="btnToggleTheme" Content="☀️ Tema" Style="{DynamicResource BtnOutline}" Height="26" Padding="8,2" HorizontalAlignment="Right" VerticalAlignment="Top" Click="BtnToggleTheme_Click" />
+
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="INICIAR SESIÓN" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource BrushTextPrimary}" />
+                    <TextBlock Text="Ingresa tus credenciales para acceder al sistema" FontSize="11.5" Foreground="{DynamicResource BrushTextSecondary}" Margin="0,4,0,18" />
+
+                    <!-- Campo Usuario -->
+                    <TextBlock Text="Nombre de Usuario" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource BrushTextSecondary}" Margin="0,0,0,3" />
+                    <TextBox x:Name="txtUserName" Text="admin" Margin="0,0,0,12" Height="30" />
+
+                    <!-- Campo Contraseña -->
+                    <TextBlock Text="Contraseña" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource BrushTextSecondary}" Margin="0,0,0,3" />
+                    <PasswordBox x:Name="txtPassword" Password="admin" Margin="0,0,0,6" Height="30" KeyDown="TxtPassword_KeyDown" />
+
+                    <!-- Olvidaste Contraseña -->
+                    <DockPanel Margin="0,0,0,10">
+                        <TextBlock HorizontalAlignment="Right">
+                            <Hyperlink x:Name="hlForgotPassword" Click="HlForgotPassword_Click" Foreground="{DynamicResource BrushCyan}" TextDecorations="None" Cursor="Hand">
+                                <Run Text="¿Olvidaste tu contraseña?" FontSize="11" />
+                            </Hyperlink>
+                        </TextBlock>
+                    </DockPanel>
+
+                    <!-- Mensaje de Error / Estado -->
+                    <TextBlock x:Name="lblMensaje" Text="" Foreground="{DynamicResource BrushDanger}" FontSize="11" Margin="0,0,0,12" TextWrapping="Wrap" />
+
+                    <!-- Botón de Login -->
+                    <Button x:Name="btnLogin" Content="Iniciar Sesión" Style="{DynamicResource BtnPrimary}" Height="34" Click="BtnLogin_Click" />
+
+                    <!-- Separador / Registro -->
+                    <Grid Margin="0,16,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Separator Background="{DynamicResource BrushBorder}" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="1" Text=" ¿No tienes cuenta? " Foreground="{DynamicResource BrushTextSecondary}" FontSize="10.5" />
+                        <Separator Background="{DynamicResource BrushBorder}" Grid.Column="2" VerticalAlignment="Center" />
+                    </Grid>
+
+                    <Button x:Name="btnRegistrarse" Content="Crear Nueva Cuenta" Style="{DynamicResource BtnOutline}" Height="30" Margin="0,12,0,0" Click="BtnRegistrarse_Click" />
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

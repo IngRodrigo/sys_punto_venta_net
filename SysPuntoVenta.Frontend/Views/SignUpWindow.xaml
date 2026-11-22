@@ -1,0 +1,73 @@
+<Window x:Class="SysPuntoVenta.Frontend.Views.SignUpWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="SysFacturación - Registrar Usuario" 
+        Width="490"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Background="{DynamicResource BrushBackground}">
+    <Border Background="{DynamicResource BrushSurfaceCard}" Margin="16" CornerRadius="8" BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1" Padding="20,16">
+        <StackPanel>
+            <!-- Header Minimalista -->
+            <StackPanel Margin="0,0,0,14">
+                <TextBlock Text="CREAR CUENTA" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource BrushTextPrimary}" />
+                <TextBlock Text="Ingresa los datos para registrar un nuevo usuario en el sistema" FontSize="11" Foreground="{DynamicResource BrushTextSecondary}" Margin="0,2,0,0" />
+            </StackPanel>
+
+            <!-- Fila 1: Nombre y Apellido (2 Columnas) -->
+            <Grid Margin="0,0,0,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="Nombre" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource BrushTextSecondary}" Margin="0,0,0,3" />
+                    <TextBox x:Name="txtNombre" Height="29" />
+                </StackPanel>
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="Apellido" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource BrushTextSecondary}" Margin="0,0,0,3" />
+                    <TextBox x:Name="txtApellido" Height="29" />
+                </StackPanel>
+            </Grid>
+
+            <!-- Fila 2: Usuario y Contraseña (2 Columnas) -->
+            <Grid Margin="0,0,0,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="Usuario (Login)" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource BrushTextSecondary}" Margin="0,0,0,3" />
+                    <TextBox x:Name="txtUsuario" Height="29" />
+                </StackPanel>
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="Contraseña" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource BrushTextSecondary}" Margin="0,0,0,3" />
+                    <PasswordBox x:Name="txtPassword" Height="29" />
+                </StackPanel>
+            </Grid>
+
+            <!-- Fila 3: Email (Ancho Completo) -->
+            <StackPanel Margin="0,0,0,12">
+                <TextBlock Text="Correo Electrónico" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource BrushTextSecondary}" Margin="0,0,0,3" />
+                <TextBox x:Name="txtEmail" Height="29" />
+            </StackPanel>
+
+            <!-- Mensaje de Estado / Error -->
+            <TextBlock x:Name="lblMensaje" Text="" Foreground="{DynamicResource BrushDanger}" FontSize="11" Margin="0,0,0,12" TextWrapping="Wrap" />
+
+            <!-- Botones de Acción Minimalistas -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="110" />
+                </Grid.ColumnDefinitions>
+                <Button x:Name="btnGuardar" Grid.Column="0" Content="Registrar Usuario" Style="{DynamicResource BtnPrimary}" Height="32" Click="BtnGuardar_Click" />
+                <Button x:Name="btnCancelar" Grid.Column="2" Content="Cancelar" Style="{DynamicResource BtnOutline}" Height="32" Click="BtnCancelar_Click" />
+            </Grid>
+        </StackPanel>
+    </Border>
+</Window>
