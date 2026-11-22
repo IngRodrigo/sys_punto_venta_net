@@ -1,6 +1,6 @@
-# SysPuntoVenta - Sistema de Facturación y Punto de Venta (.NET 9 C#)
+# SysFacturación - Sistema de Punto de Venta & Gestión Comercial (.NET 9 C#)
 
-Réplica modernizada y desacoplada del proyecto Java `sys_facturacion_r`.
+Solución empresarial moderna de punto de venta (POS), gestión de inventario, facturación y auditoría, desarrollada con arquitectura desacoplada y multicapa en **.NET 9**, consumible tanto por clientes de escritorio (**WPF**) como por aplicaciones móviles (**Flutter, React Native, MAUI o Kotlin**).
 
 ---
 
@@ -8,79 +8,98 @@ Réplica modernizada y desacoplada del proyecto Java `sys_facturacion_r`.
 
 ```
 C:\proyectos\sys_punto_venta_net\
-├── SysPuntoVenta.sln                  # Solución Visual Studio / .NET 9
-├── sys_facturacion.sql                # Script DDL + DML para MySQL
+├── SysPuntoVenta.sln                  # Solución unificada en .NET 9
+├── sys_facturacion.sql                # Script DDL + DML inicial para MySQL
+├── .gitignore                         # Exclusión de binarios y temporales
 ├── nuget.config
 │
-├── SysPuntoVenta.Common/             # Biblioteca de Clases compartida
-│   └── Models/                       # DTOs y DataContracts ([DataContract], [DataMember])
+├── SysPuntoVenta.Common/             # Biblioteca de Clases compartida (Desktop & Móvil)
+│   └── Models/                       # DTOs y modelos serializables JSON ([DataContract], [DataMember])
 │
-├── SysPuntoVenta.Backend/            # Backend de Servicios WCF (CoreWCF en .NET 9)
-│   ├── Contracts/                    # Interfaces de servicio CoreWCF ([ServiceContract])
-│   ├── Services/                     # Lógica de negocio y servicios WCF
-│   ├── Data/                         # Acceso a base de datos MySQL (MySqlConnector)
-│   └── Program.cs                    # Configuración de Kestrel (localhost:5050) y endpoints SOAP
+├── SysPuntoVenta.Backend/            # API RESTful JSON (.NET 9 Web API) + CoreWCF
+│   ├── Controllers/                  # Controladores REST JSON (Auth, Clientes, Facturación, Informes, etc.)
+│   ├── Services/                     # Lógica de negocio, Tokens JWT y Servicio de Email
+│   ├── Data/                         # Acceso a datos MySQL con MySqlConnector y auto-migraciones
+│   └── Program.cs                    # Configuración de Kestrel (localhost:5050), JWT y middlewares
 │
 └── SysPuntoVenta.Frontend/           # Cliente de Escritorio WPF (.NET 9)
-    ├── App.xaml                      # Paleta de colores moderna (Azul, Negro, Violeta)
-    ├── Services/                     # Proxies WCF (ChannelFactory con System.ServiceModel)
-    └── Views/                        # Interfaces XAML
-        ├── LoginWindow.xaml          # Inicio de sesión con validación WCF
-        ├── SignUpWindow.xaml         # Registro de nuevos usuarios
-        ├── MainWindow.xaml           # Panel principal con navegación lateral y reloj en vivo
-        ├── FacturacionControl.xaml   # Punto de venta, detalle, subtotales, IVA 10% y emisión
-        ├── ProductosControl.xaml     # CRUD de productos con cálculo de IVA y precios
-        ├── BuscadorProductoDialog.xaml # Modal rápido de búsqueda y selección de artículos
-        ├── CiudadesControl.xaml      # Mantenimiento de ciudades
-        └── UsuariosControl.xaml      # Visualización de usuarios y accesos
+    ├── App.xaml                      # Estilos y controles dinámicos con ThemeManager
+    ├── Themes/                       # Diccionarios de temas (DarkTheme.xaml y LightTheme.xaml)
+    ├── Services/                     # Cliente HTTP (ApiClient), Exportador PDF (QuestPDF) y Sesión
+    └── Views/                        # Interfaces de usuario compactas y minimalistas
+        ├── LoginWindow.xaml          # Inicio de sesión con JWT y recuperación de clave
+        ├── ForgotPasswordWindow.xaml # Diálogo de recuperación con código OTP por correo
+        ├── MainWindow.xaml           # Panel principal con navegación lateral y selector de tema
+        ├── DashboardControl.xaml     # Panel de control con métricas en tiempo real
+        ├── FacturacionControl.xaml   # Punto de venta, detalle, IVA 10% y emisión de comprobantes
+        ├── ProductosControl.xaml     # Catálogo de productos, cálculo automático de impuestos y stock
+        ├── BuscadorProductoDialog.xaml # Modal de búsqueda asistida de artículos
+        ├── ClientesControl.xaml      # Gestión de cartera de clientes
+        ├── InformesControl.xaml      # Módulo de informes en grillas y exportación a PDF
+        ├── UsuariosControl.xaml      # Administración de usuarios y roles
+        └── CiudadesControl.xaml      # Catálogo geográfico de ciudades
 ```
 
 ---
 
-## 🎨 Paleta de Estilos
+## 🔒 Seguridad y Autenticación
 
-* **Fondos**: `#0B0F19` (Negro Profundo), `#111625` (Superficie), `#161B2E` (Tarjetas).
-* **Color Primario**: `#8B5CF6` / `#A855F7` (Violeta Elegante).
-* **Color Secundario**: `#2563EB` / `#38BDF8` (Azul Eléctrico / Cian).
-* **Gradiente Principal**: LinearGradient de `#2563EB` a `#7C3AED` a `#9333EA`.
+* **Autenticación JWT**: Emisión de Bearer Access Tokens y Refresh Tokens de rotación automática.
+* **Cifrado de Contraseñas**: Hashing criptográfico robusto con **BCrypt** (reemplazo de hashes heredados MD5).
+* **Recuperación Segura por Correo**: Verificación de identidad mediante código OTP de 6 dígitos de un solo uso.
+* **Separación de Privilegios**: Restricción estricta de roles; solo los administradores autenticados pueden crear o asignar nuevos usuarios administradores.
+* **Protección de Datos Sensibles**: Exclusión obligatoria de contraseñas de producción, archivos de volcado, secretos locales y claves privadas mediante `.gitignore`.
 
 ---
 
-## 🚀 Puesta en Marcha
+## 🎨 Temas Visuales Dinámicos
+
+La interfaz cuenta con dos paletas completas conmutables al instante sin reiniciar la aplicación:
+* **Modo Oscuro (Cyber Dark & Violet)**: Tonos `#0B0F19`, `#111625` y acentos violetas/azules.
+* **Modo Claro (Modern Slate & Violet)**: Fondos `#F1F5F9`, `#FFFFFF` con textos en gris pizarra oscuro `#0F172A` para máximo contraste y legibilidad.
+
+---
+
+## 🚀 Puesta en Marcha en Entornos de Desarrollo
 
 ### 1. Base de Datos MySQL
-1. Abre tu gestor MySQL favorito (phpMyAdmin, MySQL Workbench, DBeaver, HeidiSQL o CLI).
-2. Ejecuta el script:
+1. Abre tu gestor MySQL preferido (MySQL Workbench, DBeaver, phpMyAdmin o CLI).
+2. Ejecuta el script de estructura inicial:
    ```sql
-   source C:\proyectos\sys_punto_venta_net\sys_facturacion.sql;
+   source sys_facturacion.sql;
    ```
-3. Verifica la conexión en `SysPuntoVenta.Backend\appsettings.json`:
+3. Configura tus credenciales locales en `SysPuntoVenta.Backend\appsettings.json` o mediante variables de entorno:
    ```json
    "ConnectionStrings": {
-     "DefaultConnection": "Server=localhost;Port=3306;Database=sys_facturacion;Uid=root;Pwd=;AllowPublicKeyRetrieval=True;SslMode=None;"
+     "DefaultConnection": "Server=localhost;Port=3306;Database=sys_facturacion;Uid=TU_USUARIO_MYSQL;Pwd=TU_PASSWORD_MYSQL;AllowPublicKeyRetrieval=True;SslMode=None;"
    }
    ```
+   > **Nota de Seguridad**: Nunca guardes contraseñas de producción en archivos de configuración rastreados por Git. Puedes utilizar un archivo `appsettings.Local.json` (ignorado por `.gitignore`) o variables de entorno del sistema operativo.
 
-### 2. Iniciar el Backend (Servicio WCF)
-Abre una terminal y ejecuta:
+### 2. Iniciar el Backend (API REST)
+Ejecuta el script o mediante consola:
 ```powershell
-cd C:\proyectos\sys_punto_venta_net\SysPuntoVenta.Backend
+.\iniciar_backend.bat
+```
+O directamente con el CLI de .NET:
+```powershell
+cd SysPuntoVenta.Backend
 dotnet run
 ```
-El servicio estará disponible en `http://localhost:5050/` y sus endpoints WSDL:
-* `http://localhost:5050/AuthService.svc?wsdl`
-* `http://localhost:5050/ProductoService.svc?wsdl`
-* `http://localhost:5050/FacturacionService.svc?wsdl`
-* `http://localhost:5050/CatalogosService.svc?wsdl`
+La API estará disponible en `http://localhost:5050/api` y responderá al endpoint de diagnóstico en `http://localhost:5050/api/dashboard/ping`.
 
-### 3. Iniciar el Frontend (Cliente WPF)
-En otra terminal o desde Visual Studio:
+### 3. Iniciar el Frontend (Cliente Desktop WPF)
+Ejecuta el script o mediante consola:
 ```powershell
-cd C:\proyectos\sys_punto_venta_net\SysPuntoVenta.Frontend
+.\iniciar_frontend.bat
+```
+O directamente con el CLI de .NET:
+```powershell
+cd SysPuntoVenta.Frontend
 dotnet run
 ```
 
-### 4. Credenciales Iniciales
-* **Usuario**: `admin`
-* **Contraseña**: `admin`
-*(También disponible usuario `vendedor` con clave `123456`)*
+---
+
+## 📄 Licencia y Uso
+Proyecto desarrollado con propósitos empresariales y de gestión comercial. Todos los derechos reservados.
