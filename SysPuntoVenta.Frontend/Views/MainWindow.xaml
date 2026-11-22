@@ -65,6 +65,7 @@
                         
                         <Button x:Name="btnNavClientes" Content="👥 Cartera de Clientes" Style="{DynamicResource BtnOutline}" HorizontalContentAlignment="Left" Height="34" Margin="0,0,0,4" Click="BtnNavClientes_Click" />
                         <Button x:Name="btnNavProductos" Content="📦 Catálogo de Productos" Style="{DynamicResource BtnOutline}" HorizontalContentAlignment="Left" Height="34" Margin="0,0,0,4" Click="BtnNavProductos_Click" />
+                        <Button x:Name="btnNavInventario" Content="📋 Control de Inventario" Style="{DynamicResource BtnOutline}" HorizontalContentAlignment="Left" Height="34" Margin="0,0,0,4" Click="BtnNavInventario_Click" />
 
                         <TextBlock Text="INFORMES &amp; ESTADÍSTICAS" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource BrushTextSecondary}" Margin="8,10,0,5" />
                         <Button x:Name="btnNavInformes" Content="📑 Módulo de Informes" Style="{DynamicResource BtnOutline}" HorizontalContentAlignment="Left" Height="34" Margin="0,0,0,4" Click="BtnNavInformes_Click" />

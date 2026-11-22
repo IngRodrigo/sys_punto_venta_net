@@ -438,5 +438,65 @@ namespace SysPuntoVenta.Frontend.Services
             var res = await GetWithAuthAsync<VentasPeriodoResumenDto>($"{BaseUrl}/informes/ventas?periodo={periodo}");
             return res ?? new VentasPeriodoResumenDto();
         }
+
+        // --- INVENTARIO & KARDEX ---
+        /// <summary>
+        /// Recupera el resumen consolidado de métricas de inventario (artículos totales, críticos, agotados y valorización).
+        /// </summary>
+        /// <returns>DTO con las métricas del inventario.</returns>
+        public static async Task<InventarioResumenDto> GetInventarioResumenAsync()
+        {
+            var res = await GetWithAuthAsync<InventarioResumenDto>($"{BaseUrl}/inventario/resumen");
+            return res ?? new InventarioResumenDto();
+        }
+
+        /// <summary>
+        /// Obtiene el listado de existencias de todos los artículos con semáforo de estado de stock.
+        /// </summary>
+        /// <returns>Lista de existencias detalladas.</returns>
+        public static async Task<List<InventarioStockDto>> GetInventarioStockAsync()
+        {
+            var res = await GetWithAuthAsync<List<InventarioStockDto>>($"{BaseUrl}/inventario/stock");
+            return res ?? new List<InventarioStockDto>();
+        }
+
+        /// <summary>
+        /// Obtiene el historial completo de movimientos (Kardex) para un producto determinado.
+        /// </summary>
+        /// <param name="idProducto">Identificador del producto.</param>
+        /// <returns>Lista de movimientos del producto ordenados cronológicamente.</returns>
+        public static async Task<List<InventarioMovimientoDto>> GetInventarioKardexAsync(int idProducto)
+        {
+            var res = await GetWithAuthAsync<List<InventarioMovimientoDto>>($"{BaseUrl}/inventario/kardex/{idProducto}");
+            return res ?? new List<InventarioMovimientoDto>();
+        }
+
+        /// <summary>
+        /// Obtiene los movimientos globales de inventario con filtros opcionales por tipo o por producto.
+        /// </summary>
+        /// <param name="tipo">Tipo de movimiento (ej: ENTRADA_COMPRA, SALIDA_VENTA, etc.).</param>
+        /// <param name="idProducto">ID opcional del producto.</param>
+        /// <returns>Lista de movimientos de inventario.</returns>
+        public static async Task<List<InventarioMovimientoDto>> GetInventarioMovimientosAsync(string? tipo = null, int? idProducto = null)
+        {
+            string url = $"{BaseUrl}/inventario/movimientos?";
+            if (!string.IsNullOrWhiteSpace(tipo)) url += $"tipo={Uri.EscapeDataString(tipo)}&";
+            if (idProducto.HasValue && idProducto.Value > 0) url += $"idProducto={idProducto.Value}&";
+
+            var res = await GetWithAuthAsync<List<InventarioMovimientoDto>>(url.TrimEnd('&', '?'));
+            return res ?? new List<InventarioMovimientoDto>();
+        }
+
+        /// <summary>
+        /// Registra un nuevo ingreso de compra o ajuste de inventario en el backend.
+        /// </summary>
+        /// <param name="req">Petición con los detalles del ajuste de stock.</param>
+        /// <returns>Respuesta de la operación con el resultado.</returns>
+        public static async Task<RespuestaOperacion> RegistrarAjusteInventarioAsync(RegistrarAjusteRequest req)
+        {
+            var response = await PostWithAuthAsync($"{BaseUrl}/inventario/ajuste", req);
+            return await response.Content.ReadFromJsonAsync<RespuestaOperacion>()
+                ?? new RespuestaOperacion { Exito = false, Mensaje = "Sin respuesta del servidor" };
+        }
     }
 }

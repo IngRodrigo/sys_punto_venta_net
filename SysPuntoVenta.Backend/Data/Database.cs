@@ -186,6 +186,48 @@ namespace SysPuntoVenta.Backend.Data
                 await using var cmdPaisesCiudades = new MySqlCommand(sqlPaisesCiudades, conn);
                 await cmdPaisesCiudades.ExecuteNonQueryAsync();
 
+                // Asegurar columnas de inventario en productos (stock_minimo, stock_maximo, costo_compra)
+                const string checkStockMinColSql = @"
+                    SELECT COUNT(*) 
+                    FROM INFORMATION_SCHEMA.COLUMNS 
+                    WHERE TABLE_SCHEMA = 'sys_facturacion' 
+                      AND TABLE_NAME = 'productos' 
+                      AND COLUMN_NAME = 'stock_minimo';";
+                await using var cmdCheckStockMin = new MySqlCommand(checkStockMinColSql, conn);
+                var existsStockMin = Convert.ToInt32(await cmdCheckStockMin.ExecuteScalarAsync()) > 0;
+                if (!existsStockMin)
+                {
+                    const string alterStockSql = @"
+                        ALTER TABLE `productos` 
+                        ADD COLUMN `stock_minimo` INT NOT NULL DEFAULT 5 AFTER `cantidad`,
+                        ADD COLUMN `stock_maximo` INT NOT NULL DEFAULT 100 AFTER `stock_minimo`,
+                        ADD COLUMN `costo_compra` DECIMAL(12,2) NOT NULL DEFAULT 0.00 AFTER `stock_maximo`;";
+                    await using var cmdAlterStock = new MySqlCommand(alterStockSql, conn);
+                    await cmdAlterStock.ExecuteNonQueryAsync();
+                    Console.WriteLine("✔ Columnas 'stock_minimo', 'stock_maximo' y 'costo_compra' agregadas a 'productos'.");
+                }
+
+                // Asegurar tabla inventario_movimientos para Kardex y trazabilidad
+                const string createInventarioMovimientosSql = @"
+                    CREATE TABLE IF NOT EXISTS `inventario_movimientos` (
+                        `id` INT AUTO_INCREMENT PRIMARY KEY,
+                        `idProducto` INT NOT NULL,
+                        `tipo_movimiento` VARCHAR(25) NOT NULL,
+                        `cantidad` INT NOT NULL,
+                        `stock_anterior` INT NOT NULL,
+                        `stock_posterior` INT NOT NULL,
+                        `costo_unitario` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+                        `documento_referencia` VARCHAR(60) NULL,
+                        `motivo` VARCHAR(255) NOT NULL,
+                        `idUsuario` INT NULL,
+                        `fecha` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                        INDEX idx_prod_fecha (`idProducto`, `fecha`),
+                        INDEX idx_tipo (`tipo_movimiento`),
+                        INDEX idx_fecha (`fecha`)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+                await using var cmdInvMov = new MySqlCommand(createInventarioMovimientosSql, conn);
+                await cmdInvMov.ExecuteNonQueryAsync();
+
                 // Asegurar tabla seg_refresh_tokens para JWT
                 const string createRefreshTokensSql = @"
                     CREATE TABLE IF NOT EXISTS `seg_refresh_tokens` (

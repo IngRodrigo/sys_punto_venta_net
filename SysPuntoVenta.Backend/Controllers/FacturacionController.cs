@@ -90,11 +90,44 @@ namespace SysPuntoVenta.Backend.Controllers
                         await cmdDetalle.ExecuteNonQueryAsync();
                     }
 
+                    // Obtener stock actual antes del descuento para trazabilidad en Kardex
+                    int stockActual = 0;
+                    const string sqlStockPrev = "SELECT cantidad FROM productos WHERE id = @idProducto FOR UPDATE;";
+                    await using (var cmdStockPrev = new MySqlCommand(sqlStockPrev, conn, trans))
+                    {
+                        cmdStockPrev.Parameters.AddWithValue("@idProducto", item.IdProducto);
+                        var stockObj = await cmdStockPrev.ExecuteScalarAsync();
+                        stockActual = stockObj != null ? Convert.ToInt32(stockObj) : 0;
+                    }
+
+                    int stockPosterior = Math.Max(0, stockActual - item.Cantidad);
+
                     await using (var cmdStock = new MySqlCommand(sqlStock, conn, trans))
                     {
                         cmdStock.Parameters.AddWithValue("@cantidad", item.Cantidad);
                         cmdStock.Parameters.AddWithValue("@idProducto", item.IdProducto);
                         await cmdStock.ExecuteNonQueryAsync();
+                    }
+
+                    // Registrar movimiento en inventario_movimientos (Kardex)
+                    const string sqlKardex = @"
+                        INSERT INTO inventario_movimientos 
+                            (idProducto, tipo_movimiento, cantidad, stock_anterior, stock_posterior, 
+                             costo_unitario, documento_referencia, motivo, idUsuario, fecha)
+                        VALUES 
+                            (@idProducto, 'SALIDA_VENTA', @cantidad, @stock_anterior, @stock_posterior,
+                             @costo, @docRef, @motivo, @idUsuario, NOW());";
+                    await using (var cmdKardex = new MySqlCommand(sqlKardex, conn, trans))
+                    {
+                        cmdKardex.Parameters.AddWithValue("@idProducto", item.IdProducto);
+                        cmdKardex.Parameters.AddWithValue("@cantidad", item.Cantidad);
+                        cmdKardex.Parameters.AddWithValue("@stock_anterior", stockActual);
+                        cmdKardex.Parameters.AddWithValue("@stock_posterior", stockPosterior);
+                        cmdKardex.Parameters.AddWithValue("@costo", item.PrecioUnitario);
+                        cmdKardex.Parameters.AddWithValue("@docRef", factura.NumeroFactura);
+                        cmdKardex.Parameters.AddWithValue("@motivo", $"Venta en POS ({factura.NumeroFactura})");
+                        cmdKardex.Parameters.AddWithValue("@idUsuario", (object?)factura.IdUsuario ?? 1);
+                        await cmdKardex.ExecuteNonQueryAsync();
                     }
                 }
 

@@ -51,6 +51,9 @@ namespace SysPuntoVenta.Common.Models
         [DataMember] public decimal PrecioNeto { get; set; }
         [DataMember] public int IdImpuesto { get; set; } = 1;
         [DataMember] public int Cantidad { get; set; } = 100;
+        [DataMember] public int StockMinimo { get; set; } = 5;
+        [DataMember] public int StockMaximo { get; set; } = 100;
+        [DataMember] public decimal CostoCompra { get; set; } = 0.00m;
         [DataMember] public int IdProveedor { get; set; } = 1;
         [DataMember] public string ProveedorNombre { get; set; } = string.Empty;
         [DataMember] public string ImpuestoNombre { get; set; } = string.Empty;
@@ -227,5 +230,63 @@ namespace SysPuntoVenta.Common.Models
         [DataMember] public decimal TotalImpuesto { get; set; }
         [DataMember] public decimal TotalNeto { get; set; }
         [DataMember] public List<FacturaDto> Ventas { get; set; } = new();
+    }
+
+    [DataContract]
+    public class InventarioStockDto
+    {
+        [DataMember] public int IdProducto { get; set; }
+        [DataMember] public string Codigo { get; set; } = string.Empty;
+        [DataMember] public string Descripcion { get; set; } = string.Empty;
+        [DataMember] public int Cantidad { get; set; }
+        [DataMember] public int StockMinimo { get; set; } = 5;
+        [DataMember] public int StockMaximo { get; set; } = 100;
+        [DataMember] public decimal CostoCompra { get; set; }
+        [DataMember] public decimal PrecioNeto { get; set; }
+        [DataMember] public decimal ValorTotalCosto { get; set; }
+        [DataMember] public decimal ValorTotalVenta { get; set; }
+        [DataMember] public string ProveedorNombre { get; set; } = string.Empty;
+        [DataMember] public string EstadoStock { get; set; } = "NORMAL"; // NORMAL, CRITICO, AGOTADO
+    }
+
+    [DataContract]
+    public class InventarioMovimientoDto
+    {
+        [DataMember] public int Id { get; set; }
+        [DataMember] public int IdProducto { get; set; }
+        [DataMember] public string ProductoCodigo { get; set; } = string.Empty;
+        [DataMember] public string ProductoDescripcion { get; set; } = string.Empty;
+        [DataMember] public string TipoMovimiento { get; set; } = string.Empty; // ENTRADA_COMPRA, SALIDA_VENTA, AJUSTE_POSITIVO, AJUSTE_NEGATIVO, DEVOLUCION
+        [DataMember] public int Cantidad { get; set; }
+        [DataMember] public int StockAnterior { get; set; }
+        [DataMember] public int StockPosterior { get; set; }
+        [DataMember] public decimal CostoUnitario { get; set; }
+        [DataMember] public string DocumentoReferencia { get; set; } = string.Empty;
+        [DataMember] public string Motivo { get; set; } = string.Empty;
+        [DataMember] public string UsuarioNombre { get; set; } = string.Empty;
+        [DataMember] public DateTime Fecha { get; set; }
+    }
+
+    [DataContract]
+    public class RegistrarAjusteRequest
+    {
+        [DataMember] public int IdProducto { get; set; }
+        [DataMember] public string TipoMovimiento { get; set; } = "ENTRADA_COMPRA"; // ENTRADA_COMPRA, AJUSTE_POSITIVO, AJUSTE_NEGATIVO
+        [DataMember] public int Cantidad { get; set; }
+        [DataMember] public decimal CostoUnitario { get; set; }
+        [DataMember] public string DocumentoReferencia { get; set; } = string.Empty;
+        [DataMember] public string Motivo { get; set; } = string.Empty;
+        [DataMember] public int? IdUsuario { get; set; }
+    }
+
+    [DataContract]
+    public class InventarioResumenDto
+    {
+        [DataMember] public int TotalArticulos { get; set; }
+        [DataMember] public int ArticulosNormal { get; set; }
+        [DataMember] public int ArticulosCriticos { get; set; }
+        [DataMember] public int ArticulosAgotados { get; set; }
+        [DataMember] public decimal ValorTotalCosto { get; set; }
+        [DataMember] public decimal ValorTotalVenta { get; set; }
     }
 }

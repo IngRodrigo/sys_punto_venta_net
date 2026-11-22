@@ -43,6 +43,9 @@ namespace SysPuntoVenta.Backend.Controllers
                         COALESCE(p.precio_neto, 0) AS precio_neto,
                         COALESCE(p.idImpuesto, 1) AS idImpuesto, 
                         COALESCE(p.cantidad, 0) AS cantidad, 
+                        COALESCE(p.stock_minimo, 5) AS stock_minimo,
+                        COALESCE(p.stock_maximo, 100) AS stock_maximo,
+                        COALESCE(p.costo_compra, 0) AS costo_compra,
                         COALESCE(p.idProveedor, 1) AS idProveedor, 
                         p.create_at,
                         COALESCE(pr.razon_social, 'Sin Proveedor') AS proveedor,
@@ -161,9 +164,11 @@ namespace SysPuntoVenta.Backend.Controllers
                 {
                     const string sql = @"
                         INSERT INTO productos (codigo, descripcion, bruto, precio_impuesto, precio_neto, 
-                                               idImpuesto, cantidad, idProveedor, create_at, ipCreacion, idUsuario)
+                                               idImpuesto, cantidad, stock_minimo, stock_maximo, costo_compra,
+                                               idProveedor, create_at, ipCreacion, idUsuario)
                         VALUES (@codigo, @descripcion, @bruto, @precio_impuesto, @precio_neto,
-                                @idImpuesto, @cantidad, @idProveedor, NOW(), '127.0.0.1', 1);
+                                @idImpuesto, @cantidad, @stock_minimo, @stock_maximo, @costo_compra,
+                                @idProveedor, NOW(), '127.0.0.1', 1);
                         SELECT LAST_INSERT_ID();";
 
                     await using var cmd = new MySqlCommand(sql, conn);
@@ -174,6 +179,9 @@ namespace SysPuntoVenta.Backend.Controllers
                     cmd.Parameters.AddWithValue("@precio_neto", producto.PrecioNeto);
                     cmd.Parameters.AddWithValue("@idImpuesto", producto.IdImpuesto <= 0 ? 1 : producto.IdImpuesto);
                     cmd.Parameters.AddWithValue("@cantidad", producto.Cantidad <= 0 ? 100 : producto.Cantidad);
+                    cmd.Parameters.AddWithValue("@stock_minimo", producto.StockMinimo <= 0 ? 5 : producto.StockMinimo);
+                    cmd.Parameters.AddWithValue("@stock_maximo", producto.StockMaximo <= 0 ? 100 : producto.StockMaximo);
+                    cmd.Parameters.AddWithValue("@costo_compra", producto.CostoCompra);
                     cmd.Parameters.AddWithValue("@idProveedor", producto.IdProveedor <= 0 ? 1 : producto.IdProveedor);
 
                     var id = Convert.ToInt32(await cmd.ExecuteScalarAsync());
@@ -185,7 +193,9 @@ namespace SysPuntoVenta.Backend.Controllers
                         UPDATE productos 
                         SET codigo = @codigo, descripcion = @descripcion, bruto = @bruto,
                             precio_impuesto = @precio_impuesto, precio_neto = @precio_neto,
-                            idImpuesto = @idImpuesto, cantidad = @cantidad, idProveedor = @idProveedor
+                            idImpuesto = @idImpuesto, cantidad = @cantidad, 
+                            stock_minimo = @stock_minimo, stock_maximo = @stock_maximo, costo_compra = @costo_compra,
+                            idProveedor = @idProveedor
                         WHERE id = @id;";
 
                     await using var cmd = new MySqlCommand(sql, conn);
@@ -197,6 +207,9 @@ namespace SysPuntoVenta.Backend.Controllers
                     cmd.Parameters.AddWithValue("@precio_neto", producto.PrecioNeto);
                     cmd.Parameters.AddWithValue("@idImpuesto", producto.IdImpuesto <= 0 ? 1 : producto.IdImpuesto);
                     cmd.Parameters.AddWithValue("@cantidad", producto.Cantidad);
+                    cmd.Parameters.AddWithValue("@stock_minimo", producto.StockMinimo <= 0 ? 5 : producto.StockMinimo);
+                    cmd.Parameters.AddWithValue("@stock_maximo", producto.StockMaximo <= 0 ? 100 : producto.StockMaximo);
+                    cmd.Parameters.AddWithValue("@costo_compra", producto.CostoCompra);
                     cmd.Parameters.AddWithValue("@idProveedor", producto.IdProveedor <= 0 ? 1 : producto.IdProveedor);
 
                     await cmd.ExecuteNonQueryAsync();
@@ -224,6 +237,9 @@ namespace SysPuntoVenta.Backend.Controllers
                 PrecioNeto = reader.SafeGetDecimal("precio_neto"),
                 IdImpuesto = reader.SafeGetInt32("idImpuesto", 1),
                 Cantidad = reader.SafeGetInt32("cantidad", 0),
+                StockMinimo = reader.SafeGetInt32("stock_minimo", 5),
+                StockMaximo = reader.SafeGetInt32("stock_maximo", 100),
+                CostoCompra = reader.SafeGetDecimal("costo_compra", 0),
                 IdProveedor = reader.SafeGetInt32("idProveedor", 1),
                 ProveedorNombre = reader.SafeGetString("proveedor", "Sin Proveedor"),
                 ImpuestoNombre = reader.SafeGetString("impuesto", "IVA 10%"),

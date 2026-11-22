@@ -1,0 +1,202 @@
+<UserControl x:Class="SysPuntoVenta.Frontend.Views.InventarioControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{DynamicResource BrushBackground}">
+    <Grid Margin="16,14">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Fila 0: Header de Módulo -->
+        <Border Grid.Row="0" Margin="0,0,0,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="CONTROL DE INVENTARIO &amp; KARDEX" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource BrushTextPrimary}" />
+                    <TextBlock Text="Auditoría de existencias físicas, valorización contable, alertas de reposición y trazabilidad" 
+                               FontSize="11" Foreground="{DynamicResource BrushTextSecondary}" Margin="0,2,0,0" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="btnNuevoMovimientoTop" Style="{DynamicResource BtnPrimary}" Height="30" Padding="12,0" Margin="0,0,8,0" Click="BtnNuevoMovimiento_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="➕" Margin="0,0,5,0" FontSize="10" VerticalAlignment="Center" />
+                            <TextBlock Text="Nuevo Movimiento" FontWeight="SemiBold" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="btnRefrescarTodo" Content="🔄 Actualizar" Style="{DynamicResource BtnOutline}" Height="30" Padding="10,0" Click="BtnRefrescarTodo_Click" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Fila 1: Tarjetas KPI de Resumen -->
+        <Grid Grid.Row="1" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="10" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="10" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="10" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- KPI 1: Total Artículos -->
+            <Border Grid.Column="0" Background="{DynamicResource BrushSurfaceCard}" Padding="12,10" CornerRadius="6" BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="TOTAL ARTÍCULOS" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource BrushTextSecondary}" />
+                    <TextBlock x:Name="lblKpiTotalArticulos" Text="0" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource BrushTextPrimary}" Margin="0,3,0,0" />
+                    <TextBlock Text="Ítems en catálogo" FontSize="10" Foreground="{DynamicResource BrushTextMuted}" Margin="0,2,0,0" />
+                </StackPanel>
+            </Border>
+
+            <!-- KPI 2: Stock Crítico (Alerta Ámbar) -->
+            <Border Grid.Column="2" Background="{DynamicResource BrushSurfaceCard}" Padding="12,10" CornerRadius="6" BorderBrush="#F59E0B" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="STOCK CRÍTICO" FontSize="9.5" FontWeight="Bold" Foreground="#F59E0B" />
+                    <TextBlock x:Name="lblKpiCriticos" Text="0" FontSize="18" FontWeight="Bold" Foreground="#F59E0B" Margin="0,3,0,0" />
+                    <TextBlock Text="Requieren reposición" FontSize="10" Foreground="{DynamicResource BrushTextMuted}" Margin="0,2,0,0" />
+                </StackPanel>
+            </Border>
+
+            <!-- KPI 3: Stock Agotado (Peligro Rojo) -->
+            <Border Grid.Column="4" Background="{DynamicResource BrushSurfaceCard}" Padding="12,10" CornerRadius="6" BorderBrush="{DynamicResource BrushDanger}" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="ARTÍCULOS AGOTADOS" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource BrushDanger}" />
+                    <TextBlock x:Name="lblKpiAgotados" Text="0" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource BrushDanger}" Margin="0,3,0,0" />
+                    <TextBlock Text="Existencias en cero" FontSize="10" Foreground="{DynamicResource BrushTextMuted}" Margin="0,2,0,0" />
+                </StackPanel>
+            </Border>
+
+            <!-- KPI 4: Valorización del Inventario -->
+            <Border Grid.Column="6" Background="{DynamicResource BrushSurfaceCard}" Padding="12,10" CornerRadius="6" BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="VALORIZACIÓN VENTA" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource BrushCyan}" />
+                    <TextBlock x:Name="lblKpiValorVenta" Text="0 Gs." FontSize="18" FontWeight="Bold" Foreground="{DynamicResource BrushCyan}" Margin="0,3,0,0" />
+                    <TextBlock x:Name="lblKpiValorCosto" Text="Costo: 0 Gs." FontSize="10" Foreground="{DynamicResource BrushTextSecondary}" Margin="0,2,0,0" />
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Fila 2: Barra de Pestañas -->
+        <Border Grid.Row="2" Background="{DynamicResource BrushSurfaceCard}" Padding="6" CornerRadius="6" BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1" Margin="0,0,0,10">
+            <StackPanel Orientation="Horizontal">
+                <Button x:Name="btnTabStock" Content="📦 Existencias &amp; Alertas" Style="{DynamicResource BtnPrimary}" Height="30" Margin="0,0,6,0" Click="BtnTabStock_Click" />
+                <Button x:Name="btnTabKardex" Content="📋 Auditoría de Movimientos (Kardex)" Style="{DynamicResource BtnOutline}" Height="30" Click="BtnTabKardex_Click" />
+            </StackPanel>
+        </Border>
+
+        <!-- Fila 3: Contenido de Pestañas -->
+        <Grid Grid.Row="3">
+
+            <!-- PESTAÑA 1: EXISTENCIAS Y ALERTAS -->
+            <Grid x:Name="panelStock" Visibility="Visible">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- Barra de Filtros de Existencias -->
+                <Border Grid.Row="0" Background="{DynamicResource BrushSurfaceCard}" Padding="12,8" CornerRadius="6" BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1" Margin="0,0,0,10">
+                    <DockPanel LastChildFill="False">
+                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
+                            <TextBlock Text="Buscar:" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource BrushTextSecondary}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <TextBox x:Name="txtBuscarStock" Width="200" Height="28" Margin="0,0,12,0" TextChanged="TxtBuscarStock_TextChanged" />
+
+                            <TextBlock Text="Filtro de Estado:" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource BrushTextSecondary}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <Button x:Name="btnFiltroTodos" Content="Todos" Style="{DynamicResource BtnPrimary}" Height="28" Margin="0,0,5,0" Click="BtnFiltroTodos_Click" />
+                            <Button x:Name="btnFiltroCriticos" Content="⚠️ Solo Críticos" Style="{DynamicResource BtnOutline}" Height="28" Margin="0,0,5,0" Click="BtnFiltroCriticos_Click" />
+                            <Button x:Name="btnFiltroAgotados" Content="🚫 Solo Agotados" Style="{DynamicResource BtnOutline}" Height="28" Click="BtnFiltroAgotados_Click" />
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
+                            <Button x:Name="btnExportarPdfStock" Style="{DynamicResource BtnPrimary}" Height="28" Padding="12,0" Click="BtnExportarPdfStock_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="📄" Margin="0,0,4,0" FontSize="11" VerticalAlignment="Center" />
+                                    <TextBlock Text="Exportar Existencias a PDF" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </DockPanel>
+                </Border>
+
+                <!-- Grilla de Existencias -->
+                <Border Grid.Row="1" Background="{DynamicResource BrushSurfaceCard}" Padding="10" CornerRadius="6" BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1">
+                    <DataGrid x:Name="dgStock" IsReadOnly="True" RowHeight="28" FontSize="11.5" MouseDoubleClick="DgStock_MouseDoubleClick">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="ID" Binding="{Binding IdProducto}" Width="45" />
+                            <DataGridTextColumn Header="CÓDIGO" Binding="{Binding Codigo}" Width="100" />
+                            <DataGridTextColumn Header="DESCRIPCIÓN DEL ARTÍCULO" Binding="{Binding Descripcion}" Width="*" />
+                            <DataGridTextColumn Header="PROVEEDOR" Binding="{Binding ProveedorNombre}" Width="150" />
+                            <DataGridTextColumn Header="STOCK ACTUAL" Binding="{Binding Cantidad}" Width="95" />
+                            <DataGridTextColumn Header="MÍNIMO" Binding="{Binding StockMinimo}" Width="70" />
+                            <DataGridTextColumn Header="ESTADO" Binding="{Binding EstadoStock}" Width="90" />
+                            <DataGridTextColumn Header="COSTO UNITARIO" Binding="{Binding CostoCompra, StringFormat='{}{0:N0} Gs.'}" Width="110" />
+                            <DataGridTextColumn Header="PRECIO VENTA" Binding="{Binding PrecioNeto, StringFormat='{}{0:N0} Gs.'}" Width="110" />
+                            <DataGridTextColumn Header="VALORIZACIÓN" Binding="{Binding ValorTotalVenta, StringFormat='{}{0:N0} Gs.'}" Width="120" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
+            </Grid>
+
+            <!-- PESTAÑA 2: AUDITORÍA Y KARDEX -->
+            <Grid x:Name="panelKardex" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- Barra de Filtros de Kardex -->
+                <Border Grid.Row="0" Background="{DynamicResource BrushSurfaceCard}" Padding="12,8" CornerRadius="6" BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1" Margin="0,0,0,10">
+                    <DockPanel LastChildFill="False">
+                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
+                            <TextBlock Text="Filtrar Movimiento:" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource BrushTextSecondary}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <TextBox x:Name="txtFiltroKardex" Width="220" Height="28" Margin="0,0,12,0" TextChanged="TxtFiltroKardex_TextChanged" />
+
+                            <TextBlock Text="Tipo:" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource BrushTextSecondary}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <ComboBox x:Name="cbFiltroTipoMov" Width="170" Height="28" SelectionChanged="CbFiltroTipoMov_SelectionChanged">
+                                <ComboBoxItem Content="Todos los movimientos" IsSelected="True" Tag="" />
+                                <ComboBoxItem Content="Ventas (Salidas)" Tag="SALIDA_VENTA" />
+                                <ComboBoxItem Content="Compras (Entradas)" Tag="ENTRADA_COMPRA" />
+                                <ComboBoxItem Content="Ajustes Positivos (+)" Tag="AJUSTE_POSITIVO" />
+                                <ComboBoxItem Content="Ajustes Negativos / Mermas (-)" Tag="AJUSTE_NEGATIVO" />
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
+                            <Button x:Name="btnExportarPdfKardex" Style="{DynamicResource BtnPrimary}" Height="28" Padding="12,0" Click="BtnExportarPdfKardex_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="📄" Margin="0,0,4,0" FontSize="11" VerticalAlignment="Center" />
+                                    <TextBlock Text="Exportar Kardex a PDF" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </DockPanel>
+                </Border>
+
+                <!-- Grilla de Kardex -->
+                <Border Grid.Row="1" Background="{DynamicResource BrushSurfaceCard}" Padding="10" CornerRadius="6" BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1">
+                    <DataGrid x:Name="dgKardex" IsReadOnly="True" RowHeight="28" FontSize="11.5">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="FECHA / HORA" Binding="{Binding Fecha, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}" Width="120" />
+                            <DataGridTextColumn Header="CÓDIGO" Binding="{Binding ProductoCodigo}" Width="95" />
+                            <DataGridTextColumn Header="PRODUCTO" Binding="{Binding ProductoDescripcion}" Width="1.5*" />
+                            <DataGridTextColumn Header="TIPO OPERACIÓN" Binding="{Binding TipoMovimiento}" Width="130" />
+                            <DataGridTextColumn Header="CANT." Binding="{Binding Cantidad}" Width="65" />
+                            <DataGridTextColumn Header="STOCK PREV." Binding="{Binding StockAnterior}" Width="85" />
+                            <DataGridTextColumn Header="STOCK RESULT." Binding="{Binding StockPosterior}" Width="95" />
+                            <DataGridTextColumn Header="DOC. REF." Binding="{Binding DocumentoReferencia}" Width="105" />
+                            <DataGridTextColumn Header="OPERADOR" Binding="{Binding UsuarioNombre}" Width="105" />
+                            <DataGridTextColumn Header="MOTIVO / JUSTIFICACIÓN" Binding="{Binding Motivo}" Width="1.8*" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

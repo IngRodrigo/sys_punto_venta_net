@@ -135,6 +135,17 @@ namespace SysPuntoVenta.Frontend.Views
         }
 
         /// <summary>
+        /// Navega a la vista del control de inventario, existencias y auditoría de Kardex.
+        /// </summary>
+        /// <param name="sender">Botón de navegación presionado.</param>
+        /// <param name="e">Argumentos del evento.</param>
+        private void BtnNavInventario_Click(object sender, RoutedEventArgs e)
+        {
+            lblTituloSeccion.Text = "CONTROL DE INVENTARIO & AUDITORÍA KARDEX";
+            mainContentArea.Content = new InventarioControl();
+        }
+
+        /// <summary>
         /// Navega al nuevo módulo de Informes y Reportes consolidado en grillas.
         /// </summary>
         /// <param name="sender">Botón de navegación presionado.</param>
